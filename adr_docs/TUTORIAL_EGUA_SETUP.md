@@ -18,7 +18,13 @@
 9. [Configuração do frontend](#9-configuração-do-frontend)
 10. [Docker Compose](#10-docker-compose)
 11. [Variáveis de ambiente](#11-variáveis-de-ambiente)
+    - 11.1 [Obtendo a chave da Groq (IA)](#111-obtendo-a-chave-da-groq-ia)
+    - 11.2 [Arquivo backend/.env](#112-arquivo-backendenv)
 12. [Rodando o projeto](#12-rodando-o-projeto)
+    - 12.1 [Stack completa](#121-stack-completa-backend--banco--redis)
+    - 12.2 [Apenas banco e Redis](#122-apenas-banco-de-dados-e-redis)
+    - 12.3 [Apenas o backend](#123-apenas-o-backend-api)
+    - 12.4 [Verificar se está funcionando](#124-verificar-se-está-funcionando)
 13. [Extensões recomendadas para VS Code](#13-extensões-recomendadas-para-vs-code)
 
 ---
@@ -176,7 +182,7 @@ redis==5.1.1
 celery==5.4.0
 
 # IA
-anthropic==0.34.2
+groq==0.13.0
 
 # Grafo de conhecimento
 networkx==3.3
@@ -216,8 +222,8 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 8  # 8 horas
 
-    # Anthropic
-    anthropic_api_key: str = ""
+    # Groq
+    groq_api_key: str = ""
 
     # App
     debug: bool = False
@@ -1015,20 +1021,23 @@ async def _desbloquear_sucessores(
 
 ```python
 """
-Gera feedback explicativo usando a API da Anthropic (Claude).
+Gera feedback explicativo usando a API Groq (llama-3.3-70b-versatile).
 Só é chamado quando o aluno erra ou pede uma dica.
 """
+import logging
 import uuid
 
-import anthropic
+from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models import Exercicio, FeedbackIA
 
+logger = logging.getLogger(__name__)
+
 NIVEIS_DICA = ["leve", "moderada", "solucao"]
 
-client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+_client = AsyncGroq(api_key=settings.groq_api_key)
 
 
 async def gerar_feedback(
@@ -1037,7 +1046,10 @@ async def gerar_feedback(
     dicas_usadas: int,
     sessao_id: uuid.UUID,
     db: AsyncSession,
-) -> str:
+) -> str | None:
+    if not settings.groq_api_key:
+        return None
+
     nivel = NIVEIS_DICA[min(dicas_usadas, len(NIVEIS_DICA) - 1)]
 
     instrucao_nivel = {
@@ -1056,24 +1068,27 @@ Resposta do aluno: {resposta_aluno}
 
 Responda em português, de forma encorajadora e didática. Máximo de 3 parágrafos."""
 
-    mensagem = await client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=500,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        response = await _client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+        )
+        texto = response.choices[0].message.content
+        tokens = response.usage.total_tokens if response.usage else 0
 
-    texto = mensagem.content[0].text
-    tokens = mensagem.usage.input_tokens + mensagem.usage.output_tokens
+        feedback = FeedbackIA(
+            sessao_id=sessao_id,
+            mensagem=texto,
+            nivel_dica=nivel,
+            tokens_usados=tokens,
+        )
+        db.add(feedback)
 
-    feedback = FeedbackIA(
-        sessao_id=sessao_id,
-        mensagem=texto,
-        nivel_dica=nivel,
-        tokens_usados=tokens,
-    )
-    db.add(feedback)
-
-    return texto
+        return texto
+    except Exception as e:
+        logger.warning("Falha ao gerar feedback IA: %s", e)
+        return None
 ```
 
 ---
@@ -1191,7 +1206,7 @@ services:
       - DATABASE_URL_ASYNC=postgresql+asyncpg://tutor:tutor123@db:5432/tutoregua
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=troque-esta-chave-em-producao
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     depends_on:
       db:
         condition: service_healthy
@@ -1224,7 +1239,26 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 ## 11. Variáveis de ambiente
 
-Crie `backend/.env` (nunca commite este arquivo):
+### 11.1 Obtendo a chave da Groq (IA)
+
+O projeto usa a API Groq gratuitamente para gerar feedback e responder dúvidas no chat.
+O plano gratuito oferece **14.400 requisições/dia** e **30 requisições/minuto** — suficiente para uso acadêmico.
+
+**Passos para criar a chave:**
+
+1. Acesse <https://console.groq.com/keys> e crie uma conta (pode usar Google ou GitHub)
+2. Clique em **Create API Key**, dê um nome (ex: `tutor-egua`) e confirme
+3. Copie a chave gerada — ela começa com `gsk_` e **não será exibida novamente**
+4. Cole no `backend/.env` conforme mostrado abaixo
+
+> Se a chave for comprometida ou expirar, basta criar uma nova em <https://console.groq.com/keys>
+> e atualizar o valor de `GROQ_API_KEY` no `.env`.
+
+---
+
+### 11.2 Arquivo `backend/.env`
+
+Crie `backend/.env` (nunca commite este arquivo — ele já está no `.gitignore`):
 
 ```env
 # Banco de dados
@@ -1234,13 +1268,13 @@ DATABASE_URL_ASYNC=postgresql+asyncpg://tutor:tutor123@localhost:5432/tutoregua
 # Redis
 REDIS_URL=redis://localhost:6379/0
 
-# Segurança
+# Segurança — gere com: openssl rand -hex 32
 SECRET_KEY=gere-uma-chave-aleatoria-com-openssl-rand-hex-32
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=480
 
-# IA (obtenha em https://console.anthropic.com)
-ANTHROPIC_API_KEY=sk-ant-...
+# IA — obtenha gratuitamente em https://console.groq.com/keys
+GROQ_API_KEY=gsk_...
 
 # Debug
 DEBUG=true
@@ -1279,41 +1313,97 @@ Thumbs.db
 
 ## 12. Rodando o projeto
 
-### Opção A — com Docker (recomendado)
+### 12.1 Stack completa (backend + banco + Redis)
+
+Sobe tudo de uma vez, reconstruindo a imagem do backend se houver mudanças:
 
 ```bash
 # Na raiz do projeto:
-docker compose up -d db redis   # sobe apenas o banco e o cache
+docker compose up --build
+```
 
-# Aguarde o banco ficar saudável, então rode as migrations:
+Para rodar em background (sem travar o terminal):
+
+```bash
+docker compose up --build -d
+```
+
+Para parar tudo:
+
+```bash
+docker compose down
+```
+
+Para parar e apagar os volumes (limpa o banco):
+
+```bash
+docker compose down -v
+```
+
+---
+
+### 12.2 Apenas banco de dados e Redis
+
+Útil quando você quer rodar o backend localmente (fora do Docker) com hot-reload mais rápido:
+
+```bash
+# Na raiz do projeto:
+docker compose up -d db redis
+```
+
+Confirme que subiram corretamente:
+
+```bash
+docker compose ps
+# db e redis devem aparecer como "healthy"
+```
+
+Em seguida, rode o backend localmente:
+
+```bash
 cd backend
-source .venv/bin/activate
-alembic upgrade head
-python -m app.seed.run_seed
+source .venv/bin/activate        # Linux/macOS
+# .venv\Scripts\Activate.ps1    # Windows
 
-# Suba a API:
+alembic upgrade head             # aplica migrations
+python -m app.seed.run_seed      # popula tópicos e exercícios (só na primeira vez)
 uvicorn app.main:app --reload --port 8000
+```
 
-# Em outro terminal, suba o frontend:
-cd ../frontend
+E o frontend em outro terminal:
+
+```bash
+cd frontend
 npm run dev
 ```
 
-### Opção B — stack completa via Docker
+---
+
+### 12.3 Apenas o backend (API)
+
+Útil para reiniciar só o backend sem mexer no banco ou Redis que já estão rodando:
 
 ```bash
-docker compose up --build
-# A API estará em http://localhost:8000
-# O frontend em http://localhost:5173 (rodar separado com npm run dev)
+# Rebuild e restart apenas do serviço api:
+docker compose up --build api
+
+# Ou sem rebuild (quando só mudou código Python — o volume já sincroniza):
+docker compose restart api
+
+# Ver logs em tempo real:
+docker compose logs -f api
 ```
 
-### Verificar se está funcionando
+---
+
+### 12.4 Verificar se está funcionando
 
 ```bash
 # Saúde da API:
 curl http://localhost:8000/health
+# Esperado: {"status":"ok","app":"TutorÉgua"}
 
-# Documentação interativa (Swagger):
+# Documentação interativa (Swagger UI):
 # Abra no navegador: http://localhost:8000/docs
 ```
 

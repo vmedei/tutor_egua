@@ -2,7 +2,7 @@
 
 Sistema Tutor Inteligente (ITS) para aprendizado de programação com a [linguagem Égua](http://programar.egua.dev/).
 
-**Stack:** FastAPI · PostgreSQL · Redis · React · Vite · TypeScript · Google Gemini 2.0 Flash (gratuito)
+**Stack:** FastAPI · PostgreSQL · Redis · React · Vite · TypeScript · Groq llama-3.3-70b-versatile (gratuito)
 
 ---
 
@@ -14,8 +14,8 @@ tutor-egua/
 │   ├── app/
 │   │   ├── models/           # ORM SQLAlchemy
 │   │   ├── schemas/          # Validação Pydantic
-│   │   ├── routers/          # Endpoints REST
-│   │   ├── services/         # Lógica de negócio (BKT, IA, avaliador)
+│   │   ├── routers/          # Endpoints REST (inclui /chat)
+│   │   ├── services/         # Lógica de negócio (BKT, IA, avaliador, chatbot)
 │   │   └── seed/             # Dados iniciais (tópicos e exercícios)
 │   ├── alembic/              # Migrations do banco
 │   ├── egua_runner.js        # Runner de código Égua (Node.js + @designliquido/delegua)
@@ -25,8 +25,12 @@ tutor-egua/
 ├── frontend/                 # App React + Vite + TypeScript
 │   └── src/
 │       ├── pages/            # Login, Dashboard, Exercicio
-│       ├── components/
+│       ├── components/       # ChatBot e outros componentes
 │       └── api/
+├── docs/                     # Documentação e decisões de arquitetura
+│   ├── TUTORIAL_EGUA_SETUP.md      # Guia completo de setup
+│   └── MIGRAÇÃO_GEMINI_GROQ.md     # ADR: troca de Gemini para Groq
+├── agent.md                  # Contexto do projeto para assistentes de IA
 ├── docker-compose.yml
 └── README.md
 ```
@@ -76,11 +80,13 @@ REDIS_URL=redis://localhost:6379/0
 # Gere com: openssl rand -hex 32
 SECRET_KEY=sua-chave-secreta-aqui
 
-# Obtenha gratuitamente em: https://aistudio.google.com/app/apikey
-GEMINI_API_KEY=AIza...
+# Obtenha gratuitamente em: https://console.groq.com/keys
+GROQ_API_KEY=gsk_...
 
 DEBUG=true
 ```
+
+> **Como criar a chave Groq:** acesse <https://console.groq.com/keys>, crie uma conta (Google ou GitHub), clique em **Create API Key** e copie a chave gerada (começa com `gsk_`). O plano gratuito oferece 14.400 requisições/dia — suficiente para uso acadêmico.
 
 **Frontend** — já vem configurado em `frontend/.env`:
 
@@ -205,6 +211,7 @@ O `--clear` remove sessões, progresso, exercícios, pré-requisitos e tópicos 
 | GET | `/tutor/progresso/{aluno_id}` | Proficiência em todos os tópicos |
 | POST | `/sessao/executar` | Executar código Égua (sem salvar) |
 | POST | `/sessao/` | Submeter resposta e registrar sessão |
+| POST | `/chat/` | Enviar mensagem ao assistente IA |
 
 Documentação interativa (Swagger): [http://localhost:8000/docs](http://localhost:8000/docs)
 
@@ -285,9 +292,9 @@ alembic upgrade head
 
 ## Roadmap
 
-### Em desenvolvimento
+### Implementado
 
-- [ ] **Chatbot conversacional** — assistente para tirar dúvidas e ensinar a linguagem Égua em tempo real, integrado à página de exercícios. Ver [`agent.md`](agent.md) para contexto completo e guia de implementação.
+- [x] **Chatbot conversacional** — assistente IA integrado à página de exercícios via `/chat/`, usando Groq (llama-3.3-70b-versatile). Responde dúvidas sobre a linguagem Égua, analisa código e dá dicas progressivas sem revelar a solução.
 
 ### Próximas melhorias
 

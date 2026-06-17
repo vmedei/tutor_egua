@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.env.local
+
+# Alembic
+alembic/versions/*.py
+
+# OS
+.DS_Store
+Thumbs.db

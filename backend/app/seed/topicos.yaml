@@ -1,0 +1,56 @@
+topicos:
+  - codigo: introducao
+    nome: "Introdução à Égua"
+    descricao: "IDEgua, escreva(), comentários básicos"
+    nivel: 1
+    ordem: 1
+    prerequisitos: []
+
+  - codigo: variaveis
+    nome: "Variáveis e Tipos"
+    descricao: "var, tipos primitivos, atribuição"
+    nivel: 1
+    ordem: 2
+    prerequisitos: [introducao]
+
+  - codigo: operadores
+    nome: "Operadores"
+    descricao: "Aritméticos, lógicos, relacionais"
+    nivel: 1
+    ordem: 3
+    prerequisitos: [variaveis]
+
+  - codigo: condicionais
+    nome: "Condicionais"
+    descricao: "se/senão, escolha/caso"
+    nivel: 2
+    ordem: 4
+    prerequisitos: [operadores]
+
+  - codigo: lacos
+    nome: "Laços de Repetição"
+    descricao: "enquanto, para"
+    nivel: 2
+    ordem: 5
+    prerequisitos: [condicionais]
+
+  - codigo: funcoes
+    nome: "Funções"
+    descricao: "funcao, retorne, parâmetros"
+    nivel: 3
+    ordem: 6
+    prerequisitos: [condicionais, lacos]
+
+  - codigo: listas
+    nome: "Listas e Vetores"
+    descricao: "[], acesso por índice, tamanho()"
+    nivel: 3
+    ordem: 7
+    prerequisitos: [lacos]
+
+  - codigo: classes
+    nome: "Classes e Objetos"
+    descricao: "classe, isto, métodos, herança"
+    nivel: 4
+    ordem: 8
+    prerequisitos: [funcoes, listas]

@@ -1,0 +1,363 @@
+exercicios:
+
+  # ── INTRODUÇÃO ──────────────────────────────────────────────────────────────
+
+  - topico: introducao
+    enunciado: "Qual função é usada para exibir texto na tela em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "imprimir()"
+        - "escreva()"
+        - "print()"
+        - "mostrar()"
+      correta: 1
+
+  - topico: introducao
+    enunciado: |
+      Complete o código abaixo para exibir "Olá, Mundo!" na tela:
+
+      ___("Olá, Mundo!")
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "escreva"
+
+  - topico: introducao
+    enunciado: |
+      Escreva um programa em Égua que exiba exatamente o texto abaixo:
+      Egua
+
+      Dica: use escreva("Egua")
+    tipo: implementacao_livre
+    nivel_bloom: 1
+    gabarito:
+      descricao: "Use escreva() para exibir a palavra Egua"
+    casos_de_teste:
+      - entrada: ""
+        saida_esperada: "Egua"
+
+  # ── VARIÁVEIS ───────────────────────────────────────────────────────────────
+
+  - topico: variaveis
+    enunciado: |
+      Complete o código abaixo para declarar uma variável:
+
+      ___ nome = "Ana"
+      escreva(nome)
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "var"
+
+  - topico: variaveis
+    enunciado: "Qual das opções representa o valor lógico verdadeiro em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "true"
+        - "sim"
+        - "verdadeiro"
+        - "certo"
+      correta: 2
+
+  - topico: variaveis
+    enunciado: |
+      Escreva um programa que leia um nome e exiba a saudação no formato:
+      Ola, <nome>!
+
+      Exemplo: entrada "Maria" → saída "Ola, Maria!"
+
+      Dica: use leia() e concatene strings com +
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use leia() e concatenação com +"
+    casos_de_teste:
+      - entrada: "Maria"
+        saida_esperada: "Ola, Maria!"
+      - entrada: "Carlos"
+        saida_esperada: "Ola, Carlos!"
+      - entrada: "Ana"
+        saida_esperada: "Ola, Ana!"
+
+  # ── OPERADORES ──────────────────────────────────────────────────────────────
+
+  - topico: operadores
+    enunciado: "Qual operador é usado para verificar se dois valores são iguais em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "="
+        - "=="
+        - "==="
+        - "igual"
+      correta: 1
+
+  - topico: operadores
+    enunciado: |
+      Complete com o operador lógico que representa "E" (as duas condições devem ser verdadeiras):
+
+      se (x > 0 ___ x < 10) {
+        escreva("entre 1 e 9")
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "e"
+
+  - topico: operadores
+    enunciado: |
+      Leia dois números inteiros e exiba a soma deles.
+
+      Dica: use inteiro(leia()) para converter a entrada para número.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use inteiro(leia()) e o operador +"
+    casos_de_teste:
+      - entrada: "5\n3"
+        saida_esperada: "8"
+      - entrada: "10\n-4"
+        saida_esperada: "6"
+      - entrada: "0\n0"
+        saida_esperada: "0"
+
+  # ── CONDICIONAIS ────────────────────────────────────────────────────────────
+
+  - topico: condicionais
+    enunciado: "Qual palavra-chave em Égua equivale ao 'else' de outras linguagens?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "caso"
+        - "outro"
+        - "senão"
+        - "esão"
+      correta: 2
+
+  - topico: condicionais
+    enunciado: |
+      Escreva um programa que leia um número inteiro e exiba:
+      - "positivo" se for maior que zero
+      - "negativo" se for menor que zero
+      - "zero" se for igual a zero
+
+      Dica: use inteiro(leia()) para converter a entrada.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use se / senão se / senão com inteiro(leia())"
+    casos_de_teste:
+      - entrada: "5"
+        saida_esperada: "positivo"
+      - entrada: "-3"
+        saida_esperada: "negativo"
+      - entrada: "0"
+        saida_esperada: "zero"
+
+  - topico: condicionais
+    enunciado: |
+      Leia dois números inteiros e exiba o maior deles.
+      Se forem iguais, exiba qualquer um.
+
+      Dica: use inteiro(leia()) para converter a entrada.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use se/senão para comparar e exibir o maior"
+    casos_de_teste:
+      - entrada: "7\n3"
+        saida_esperada: "7"
+      - entrada: "2\n8"
+        saida_esperada: "8"
+      - entrada: "5\n5"
+        saida_esperada: "5"
+
+  # ── LAÇOS ───────────────────────────────────────────────────────────────────
+
+  - topico: lacos
+    enunciado: "Qual palavra-chave cria um laço que repete enquanto uma condição for verdadeira?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "para"
+        - "repita"
+        - "enquanto"
+        - "loop"
+      correta: 2
+
+  - topico: lacos
+    enunciado: |
+      Complete o código abaixo para criar um laço que conta de 1 a 5:
+
+      ___ (var i = 1; i <= 5; i = i + 1) {
+        escreva(i)
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "para"
+
+  - topico: lacos
+    enunciado: |
+      Leia um número inteiro N e exiba a soma de todos os inteiros de 1 até N.
+
+      Exemplo: N=5 → 1+2+3+4+5 = 15
+
+      Dica: use inteiro(leia()) e um laço para acumular a soma.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Use para ou enquanto para acumular a soma"
+    casos_de_teste:
+      - entrada: "5"
+        saida_esperada: "15"
+      - entrada: "3"
+        saida_esperada: "6"
+      - entrada: "10"
+        saida_esperada: "55"
+
+  # ── FUNÇÕES ─────────────────────────────────────────────────────────────────
+
+  - topico: funcoes
+    enunciado: "Qual palavra-chave retorna um valor de dentro de uma função em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "return"
+        - "retorne"
+        - "retorna"
+        - "devolver"
+      correta: 2
+
+  - topico: funcoes
+    enunciado: |
+      Complete a declaração da função abaixo:
+
+      ___ dobro(n) {
+        retorna n * 2
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "função"
+
+  - topico: funcoes
+    enunciado: |
+      Escreva uma função chamada multiplica que receba dois parâmetros
+      e retorne o produto deles.
+      Leia dois números inteiros, chame a função e exiba o resultado.
+
+      Dica: use inteiro(leia()) para converter a entrada.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Declare função multiplica(a, b) { retorna a * b }"
+    casos_de_teste:
+      - entrada: "4\n5"
+        saida_esperada: "20"
+      - entrada: "3\n7"
+        saida_esperada: "21"
+      - entrada: "6\n6"
+        saida_esperada: "36"
+
+  # ── LISTAS ──────────────────────────────────────────────────────────────────
+
+  - topico: listas
+    enunciado: "Qual função retorna o número de elementos de uma lista em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "tamanho()"
+        - "comprimento()"
+        - "conta()"
+        - "tam()"
+      correta: 0
+
+  - topico: listas
+    enunciado: |
+      Complete o código para obter o tamanho da lista:
+
+      var numeros = [1, 2, 3, 4, 5]
+      escreva(___(numeros))
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "tamanho"
+
+  - topico: listas
+    enunciado: |
+      Dada a lista abaixo, leia um índice (0 a 3) e exiba o elemento correspondente:
+      var frutas = ["caju", "manga", "goiaba", "acerola"]
+
+      Exemplo: índice 1 → "manga"
+
+      Dica: use inteiro(leia()) para converter o índice.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Declare a lista e acesse pelo índice lido"
+    casos_de_teste:
+      - entrada: "0"
+        saida_esperada: "caju"
+      - entrada: "2"
+        saida_esperada: "goiaba"
+      - entrada: "3"
+        saida_esperada: "acerola"
+
+  # ── CLASSES ─────────────────────────────────────────────────────────────────
+
+  - topico: classes
+    enunciado: "Qual palavra-chave é usada para se referir ao objeto atual dentro de um método em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "self"
+        - "eu"
+        - "this"
+        - "isto"
+      correta: 3
+
+  - topico: classes
+    enunciado: |
+      Complete o código para definir uma classe em Égua:
+
+      ___ Animal {
+        construtor(nome) {
+          isto.nome = nome
+        }
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "classe"
+
+  - topico: classes
+    enunciado: |
+      Crie uma classe Retangulo com:
+      - construtor(largura, altura) que armazena as dimensões
+      - método area() que retorna largura * altura
+
+      Leia largura e altura como inteiros e exiba a área.
+
+      Dica: use inteiro(leia()) para converter a entrada.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "classe Retangulo com construtor e método area()"
+    casos_de_teste:
+      - entrada: "4\n5"
+        saida_esperada: "20"
+      - entrada: "3\n7"
+        saida_esperada: "21"
+      - entrada: "6\n6"
+        saida_esperada: "36"

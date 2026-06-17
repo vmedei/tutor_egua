@@ -13,6 +13,7 @@ export function Login() {
       const { data } = await api.post("/aluno/login", { email, senha });
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("aluno_id", data.aluno_id);
+      localStorage.setItem("nome", data.nome);
       window.location.href = "/dashboard";
     } catch {
       setErro("E-mail ou senha incorretos.");

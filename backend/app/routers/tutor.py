@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import Exercicio, ProgressoAluno, Sessao, Topico
 from app.schemas.exercicio import ExercicioResponse
-from app.schemas.progresso import ProgressoResponse
+from app.schemas.progresso import ProgressoGlobalResponse, ProgressoResponse, TopicoProgressoItem
 
 router = APIRouter()
 
@@ -54,3 +54,33 @@ async def progresso_aluno(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_db
         select(ProgressoAluno).where(ProgressoAluno.aluno_id == aluno_id)
     )
     return list(result)
+
+
+@router.get("/progresso-global/{aluno_id}", response_model=ProgressoGlobalResponse)
+async def progresso_global(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Retorna o progresso de todos os tópicos (inclusive não iniciados) e a média global."""
+    topicos = list(await db.scalars(select(Topico).order_by(Topico.ordem)))
+
+    prog_list = await db.scalars(
+        select(ProgressoAluno).where(ProgressoAluno.aluno_id == aluno_id)
+    )
+    prog_map = {p.topico_id: p for p in prog_list}
+
+    por_topico: list[TopicoProgressoItem] = []
+    soma = 0.0
+    for t in topicos:
+        p = prog_map.get(t.id)
+        prof = p.proficiencia if p else 0.0
+        soma += prof
+        por_topico.append(TopicoProgressoItem(
+            topico_id=t.id,
+            topico_codigo=t.codigo,
+            topico_nome=t.nome,
+            proficiencia=prof,
+            pct=round(prof * 100),
+            tentativas=p.tentativas if p else 0,
+            acertos=p.acertos if p else 0,
+        ))
+
+    global_pct = round(soma / len(topicos) * 100, 1) if topicos else 0.0
+    return ProgressoGlobalResponse(global_pct=global_pct, por_topico=por_topico)

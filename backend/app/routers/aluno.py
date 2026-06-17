@@ -49,7 +49,7 @@ async def login(payload: AlunoLogin, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=401, detail="E-mail ou senha incorretos")
 
     aluno.ultimo_acesso = datetime.now(timezone.utc)
-    return TokenResponse(access_token=_criar_token(str(aluno.id)), aluno_id=str(aluno.id))
+    return TokenResponse(access_token=_criar_token(str(aluno.id)), aluno_id=str(aluno.id), nome=aluno.nome)
 
 
 @router.get("/me/{aluno_id}", response_model=AlunoResponse)

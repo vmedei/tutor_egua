@@ -27,3 +27,4 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     aluno_id: str
+    nome: str

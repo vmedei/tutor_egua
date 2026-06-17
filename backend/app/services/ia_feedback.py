@@ -10,7 +10,7 @@ Limites do plano gratuito (Gemini 2.0 Flash):
 import logging
 import uuid
 
-import google.generativeai as genai
+from groq import AsyncGroq
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -20,11 +20,7 @@ logger = logging.getLogger(__name__)
 
 NIVEIS_DICA = ["leve", "moderada", "solucao"]
 
-genai.configure(api_key=settings.gemini_api_key)
-_model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    generation_config=genai.GenerationConfig(max_output_tokens=500),
-)
+_client = AsyncGroq(api_key=settings.groq_api_key)
 
 
 async def gerar_feedback(
@@ -34,7 +30,7 @@ async def gerar_feedback(
     sessao_id: uuid.UUID,
     db: AsyncSession,
 ) -> str | None:
-    if not settings.gemini_api_key:
+    if not settings.groq_api_key:
         return None
 
     nivel = NIVEIS_DICA[min(dicas_usadas, len(NIVEIS_DICA) - 1)]
@@ -56,9 +52,13 @@ Resposta do aluno: {resposta_aluno}
 Responda em português, de forma encorajadora e didática. Máximo de 3 parágrafos."""
 
     try:
-        resposta = await _model.generate_content_async(prompt)
-        texto = resposta.text
-        tokens = resposta.usage_metadata.total_token_count if resposta.usage_metadata else 0
+        response = await _client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+        )
+        texto = response.choices[0].message.content
+        tokens = response.usage.total_tokens if response.usage else 0
 
         feedback = FeedbackIA(
             sessao_id=sessao_id,

@@ -41,7 +41,9 @@ async def proximo_exercicio(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_
             .limit(1)
         )
         if exercicio:
-            return exercicio
+            resp = ExercicioResponse.model_validate(exercicio)
+            resp.topico_nome = topico.nome
+            return resp
 
     raise HTTPException(status_code=404, detail="Todos os exercícios foram concluídos!")
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
+import { ChatBot } from "../components/ChatBot";
 
 interface CasoTeste {
   entrada: string;
@@ -8,6 +9,7 @@ interface CasoTeste {
 
 interface ExercicioData {
   id: string;
+  topico_nome: string | null;
   enunciado: string;
   tipo: string;
   gabarito?: { opcoes?: string[]; resposta?: string };
@@ -317,6 +319,12 @@ export function Exercicio() {
           )}
         </div>
       )}
+
+      {/* Chatbot de apoio */}
+      <ChatBot
+        topicoNome={exercicio.topico_nome ?? exercicio.tipo.replace(/_/g, " ")}
+        exercicioEnunciado={exercicio.enunciado}
+      />
 
       {/* Resultado da submissão */}
       {submissao && (

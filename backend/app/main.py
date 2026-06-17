@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import aluno, exercicio, sessao, tutor
+from app.routers import aluno, chat, exercicio, sessao, tutor
 
 app = FastAPI(
     title="TutorÉgua API",
@@ -21,6 +21,7 @@ app.include_router(aluno.router, prefix="/aluno", tags=["aluno"])
 app.include_router(exercicio.router, prefix="/exercicio", tags=["exercicio"])
 app.include_router(sessao.router, prefix="/sessao", tags=["sessao"])
 app.include_router(tutor.router, prefix="/tutor", tags=["tutor"])
+app.include_router(chat.router, prefix="/chat", tags=["chat"])
 
 
 @app.get("/health")

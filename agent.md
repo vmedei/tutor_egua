@@ -11,7 +11,7 @@ Sistema Tutor Inteligente (ITS) voltado para o ensino da linguagem de programaç
 - Apresenta exercícios progressivos organizados em tópicos (grafo de conhecimento)
 - Executa código Égua de forma real, comparando a saída com casos de teste
 - Atualiza um modelo de proficiência por tópico (BKT simplificado)
-- Gera feedback via IA (Gemini 2.0 Flash) quando o aluno erra
+- Gera feedback via IA (Groq — llama-3.3-70b-versatile) quando o aluno erra
 
 O chatbot é a **próxima grande funcionalidade**: um assistente conversacional que o aluno pode acionar a qualquer momento para tirar dúvidas, pedir explicações e ver exemplos sobre a linguagem Égua.
 
@@ -39,8 +39,8 @@ O chatbot é a **próxima grande funcionalidade**: um assistente conversacional 
 └───────┬──────────────────────┬──────────────────────┘
         │                      │
 ┌───────▼──────┐   ┌───────────▼──────────────────────┐
-│  PostgreSQL  │   │  Google Gemini 2.0 Flash (free)  │
-│  (Docker)    │   │  gemini-2.0-flash                │
+│  PostgreSQL  │   │  Groq Cloud (free tier)          │
+│  (Docker)    │   │  llama-3.3-70b-versatile         │
 └──────────────┘   └──────────────────────────────────┘
 ```
 
@@ -74,32 +74,32 @@ frontend/
 
 ---
 
-## 3. Integração Gemini existente (referência para o chat)
+## 3. Integração Groq existente (referência para o chat)
 
 O serviço `backend/app/services/ia_feedback.py` é o padrão a seguir:
 
 ```python
-import google.generativeai as genai
+from groq import AsyncGroq
 from app.config import settings
 
-genai.configure(api_key=settings.gemini_api_key)
-_model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    generation_config=genai.GenerationConfig(max_output_tokens=500),
-)
+_client = AsyncGroq(api_key=settings.groq_api_key)
 
 # Chamada assíncrona:
-resposta = await _model.generate_content_async(prompt)
-texto = resposta.text
-tokens = resposta.usage_metadata.total_token_count
+response = await _client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=500,
+)
+texto = response.choices[0].message.content
+tokens = response.usage.total_tokens
 ```
 
-A chave `GEMINI_API_KEY` já está em `backend/.env` e no `Settings`. Não há necessidade de nenhuma dependência adicional.
+A chave `GROQ_API_KEY` já está em `backend/.env` e no `Settings`. Não há necessidade de nenhuma dependência adicional.
 
-**Limites do plano gratuito (Gemini 2.0 Flash):**
-- 15 requisições/minuto
-- 1.000.000 tokens/dia
-- 1.500 requisições/dia
+**Limites do plano gratuito (Groq — llama-3.3-70b-versatile):**
+- 30 requisições/minuto
+- 14.400 requisições/dia
+- 6.000 tokens/minuto
 
 ---
 
@@ -507,31 +507,30 @@ Recuperar as últimas N mensagens no endpoint de chat para passar ao Gemini.
 
 ---
 
-## 8. Chamada ao Gemini com histórico (referência de implementação)
+## 8. Chamada ao Groq com histórico (referência de implementação)
 
 ```python
-import google.generativeai as genai
+from groq import AsyncGroq
 from app.config import settings
 
-genai.configure(api_key=settings.gemini_api_key)
-_model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    system_instruction=SYSTEM_PROMPT,  # system prompt com referência da linguagem
-    generation_config=genai.GenerationConfig(max_output_tokens=800),
-)
+_client = AsyncGroq(api_key=settings.groq_api_key)
 
 async def responder_chat(mensagem: str, historico: list[dict]) -> str:
-    # Converte histórico para o formato do Gemini
-    contents = []
+    # Monta messages no formato OpenAI (compatível com Groq)
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for msg in historico:
-        role = "user" if msg["papel"] == "aluno" else "model"
-        contents.append({"role": role, "parts": [{"text": msg["texto"]}]})
-    
+        role = "user" if msg["papel"] == "aluno" else "assistant"
+        messages.append({"role": role, "content": msg["texto"]})
+
     # Adiciona a mensagem atual
-    contents.append({"role": "user", "parts": [{"text": mensagem}]})
-    
-    resposta = await _model.generate_content_async(contents)
-    return resposta.text
+    messages.append({"role": "user", "content": mensagem})
+
+    response = await _client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=messages,
+        max_tokens=800,
+    )
+    return response.choices[0].message.content
 ```
 
 ---
@@ -554,5 +553,6 @@ async def responder_chat(mensagem: str, historico: list[dict]) -> str:
 - Documentação oficial da linguagem Égua: https://github.com/eguadev/docs/tree/master/docs/egua
 - IDE online: http://programar.egua.dev/
 - Biblioteca runtime: https://www.npmjs.com/package/@designliquido/delegua
-- Google Generative AI Python SDK: https://ai.google.dev/gemini-api/docs
-- Google AI Studio (obter chave gratuita): https://aistudio.google.com/app/apikey
+- Groq Python SDK: https://github.com/groq/groq-python
+- Groq Console (obter chave gratuita): https://console.groq.com/keys
+- Modelos disponíveis no Groq: https://console.groq.com/docs/models

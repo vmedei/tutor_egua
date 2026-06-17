@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class ExercicioResponse(BaseModel):
     id: uuid.UUID
     topico_id: uuid.UUID
+    topico_nome: str | None = None
     enunciado: str
     tipo: str
     nivel_bloom: int

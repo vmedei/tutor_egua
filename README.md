@@ -283,4 +283,21 @@ alembic upgrade head
 
 ---
 
+## Roadmap
+
+### Em desenvolvimento
+
+- [ ] **Chatbot conversacional** — assistente para tirar dúvidas e ensinar a linguagem Égua em tempo real, integrado à página de exercícios. Ver [`agent.md`](agent.md) para contexto completo e guia de implementação.
+
+### Próximas melhorias
+
+- [ ] Proteção de rotas com JWT no frontend (redirecionar para login se sem token)
+- [ ] Histórico de sessões do aluno (quais exercícios resolveu, evolução da proficiência)
+- [ ] Mais exercícios por tópico — editar `backend/app/seed/exercicios.yaml`
+- [ ] Suporte ao tipo `implementacao_livre` com múltiplos `escreva()` (saída multi-linha)
+- [ ] Testes automatizados com `pytest` + `httpx.AsyncClient`
+- [ ] Dashboard com gráfico de progresso por tópico
+
+---
+
 *TutorÉgua — IA Aplicada à Educação · UFRN · 2025*

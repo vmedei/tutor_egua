@@ -70,6 +70,9 @@ export function Navbar() {
           <Link to="/exercicio" style={pathname === "/exercicio" ? linkAtivo : linkBase}>
             Exercício
           </Link>
+          <Link to="/historico" style={pathname === "/historico" ? linkAtivo : linkBase}>
+            Histórico
+          </Link>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>

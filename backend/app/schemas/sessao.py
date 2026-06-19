@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -18,6 +19,21 @@ class SessaoResponse(BaseModel):
     saidas_obtidas: list[str] = []
 
     model_config = {"from_attributes": True}
+
+
+class SessaoHistoricoItem(BaseModel):
+    id: uuid.UUID
+    data: datetime
+    topico: str
+    exercicio: str
+    resultado: str
+    acertou: bool
+    usou_dica: bool
+    dicas_usadas: int
+    proficiencia_antes: float | None
+    proficiencia_depois: float | None
+    delta_proficiencia: float
+    tentativas: int
 
 
 class ExecutarPayload(BaseModel):

@@ -24,6 +24,8 @@ class Sessao(Base):
     correto: Mapped[bool] = mapped_column(Boolean, default=False)
     dicas_usadas: Mapped[int] = mapped_column(Integer, default=0)
     delta_proficiencia: Mapped[float] = mapped_column(Float, default=0.0)
+    proficiencia_antes: Mapped[float | None] = mapped_column(Float, nullable=True)
+    proficiencia_depois: Mapped[float | None] = mapped_column(Float, nullable=True)
     realizado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

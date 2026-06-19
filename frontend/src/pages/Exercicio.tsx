@@ -81,6 +81,7 @@ export function Exercicio() {
   const [submetendo, setSubmetendo] = useState(false);
   const [execucao, setExecucao] = useState<ResultadoExecucao | null>(null);
   const [submissao, setSubmissao] = useState<ResultadoSubmissao | null>(null);
+  const [dicasUsadas, setDicasUsadas] = useState(0);
 
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
@@ -90,6 +91,7 @@ export function Exercicio() {
     setResposta("");
     setExecucao(null);
     setSubmissao(null);
+    setDicasUsadas(0);
     setErro(null);
     setConcluido(false);
     setCarregando(true);
@@ -136,7 +138,7 @@ export function Exercicio() {
         aluno_id: alunoId,
         exercicio_id: exercicio.id,
         resposta: respostaFinal,
-        dicas_usadas: 0,
+        dicas_usadas: dicasUsadas,
       });
       setSubmissao(data);
     } catch {
@@ -324,6 +326,7 @@ export function Exercicio() {
       <ChatBot
         topicoNome={exercicio.topico_nome ?? exercicio.tipo.replace(/_/g, " ")}
         exercicioEnunciado={exercicio.enunciado}
+        onMensagemEnviada={() => setDicasUsadas((total) => total + 1)}
       />
 
       {/* Resultado da submissão */}

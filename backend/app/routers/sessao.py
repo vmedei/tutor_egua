@@ -1,14 +1,15 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Sessao, Exercicio
+from app.models import Sessao, Exercicio, Topico
 from app.schemas.sessao import (
     SessaoCreate, SessaoResponse,
-    ExecutarPayload, ExecutarResponse,
+    ExecutarPayload, ExecutarResponse, SessaoHistoricoItem,
 )
-from app.services.modelo_aluno import atualizar_proficiencia
+from app.services.modelo_aluno import atualizar_proficiencia_detalhada
 from app.services.avaliador import avaliar_resposta, _executar_egua
 from app.services.ia_feedback import gerar_feedback
 
@@ -87,7 +88,7 @@ async def submeter_resposta(
     await db.flush()
 
     # 3. Atualizar modelo do aluno
-    delta = await atualizar_proficiencia(
+    delta, proficiencia_antes, proficiencia_depois = await atualizar_proficiencia_detalhada(
         db=db,
         aluno_id=payload.aluno_id,
         topico_id=exercicio.topico_id,
@@ -95,6 +96,8 @@ async def submeter_resposta(
         dicas_usadas=payload.dicas_usadas,
     )
     sessao.delta_proficiencia = delta
+    sessao.proficiencia_antes = proficiencia_antes
+    sessao.proficiencia_depois = proficiencia_depois
 
     # 4. Feedback IA quando errou
     feedback_msg = None
@@ -115,3 +118,44 @@ async def submeter_resposta(
         detalhe=resultado.detalhe,
         saidas_obtidas=resultado.saidas_obtidas,
     )
+
+
+@router.get("/historico/{aluno_id}", response_model=list[SessaoHistoricoItem])
+async def historico_sessoes(
+    aluno_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Sessao, Exercicio, Topico)
+        .join(Exercicio, Sessao.exercicio_id == Exercicio.id)
+        .join(Topico, Exercicio.topico_id == Topico.id)
+        .where(Sessao.aluno_id == aluno_id)
+        .order_by(Sessao.realizado_em.asc(), Sessao.id.asc())
+    )
+    linhas = result.all()
+
+    tentativas_por_exercicio: dict[uuid.UUID, int] = {}
+    historico: list[SessaoHistoricoItem] = []
+
+    for sessao, exercicio, topico in linhas:
+        tentativas = tentativas_por_exercicio.get(exercicio.id, 0) + 1
+        tentativas_por_exercicio[exercicio.id] = tentativas
+
+        historico.append(
+            SessaoHistoricoItem(
+                id=sessao.id,
+                data=sessao.realizado_em,
+                topico=topico.nome,
+                exercicio=exercicio.enunciado,
+                resultado="acerto" if sessao.correto else "erro",
+                acertou=sessao.correto,
+                usou_dica=sessao.dicas_usadas > 0,
+                dicas_usadas=sessao.dicas_usadas,
+                proficiencia_antes=sessao.proficiencia_antes,
+                proficiencia_depois=sessao.proficiencia_depois,
+                delta_proficiencia=sessao.delta_proficiencia,
+                tentativas=tentativas,
+            )
+        )
+
+    return list(reversed(historico))

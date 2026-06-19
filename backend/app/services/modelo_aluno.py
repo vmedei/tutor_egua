@@ -58,10 +58,28 @@ async def atualizar_proficiencia(
     correto: bool,
     dicas_usadas: int = 0,
 ) -> float:
+    delta, _, _ = await atualizar_proficiencia_detalhada(
+        db=db,
+        aluno_id=aluno_id,
+        topico_id=topico_id,
+        correto=correto,
+        dicas_usadas=dicas_usadas,
+    )
+    return delta
+
+
+async def atualizar_proficiencia_detalhada(
+    db: AsyncSession,
+    aluno_id: uuid.UUID,
+    topico_id: uuid.UUID,
+    correto: bool,
+    dicas_usadas: int = 0,
+) -> tuple[float, float, float]:
     progresso = await _get_ou_criar_progresso(db, aluno_id, topico_id)
 
     # Aplicar decaimento acumulado antes de atualizar
     progresso.proficiencia = _aplicar_decaimento(progresso)
+    proficiencia_antes = progresso.proficiencia
     progresso.tentativas += 1
 
     if correto:
@@ -79,7 +97,7 @@ async def atualizar_proficiencia(
     if progresso.proficiencia >= LIMIAR_DESBLOQUEIO:
         await _desbloquear_sucessores(db, aluno_id, topico_id)
 
-    return delta
+    return delta, proficiencia_antes, progresso.proficiencia
 
 
 async def _desbloquear_sucessores(

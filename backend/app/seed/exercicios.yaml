@@ -38,6 +38,84 @@ exercicios:
       - entrada: ""
         saida_esperada: "Egua"
 
+  - topico: introducao
+    enunciado: "Qual comando lê uma entrada digitada pelo usuário em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "entrada()"
+        - "leia()"
+        - "receba()"
+        - "ler()"
+      correta: 1
+
+  - topico: introducao
+    enunciado: |
+      Complete o código abaixo para exibir a palavra "Bem-vindo":
+
+      escreva(___)
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "\"Bem-vindo\""
+
+  - topico: introducao
+    enunciado: |
+      Escreva um programa em Égua que exiba exatamente:
+      Aprendendo Égua
+    tipo: implementacao_livre
+    nivel_bloom: 1
+    gabarito:
+      descricao: "Use escreva() para exibir a frase solicitada"
+    casos_de_teste:
+      - entrada: ""
+        saida_esperada: "Aprendendo Égua"
+
+  - topico: introducao
+    enunciado: "Em Égua, qual símbolo geralmente envolve textos literais?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "aspas"
+        - "colchetes"
+        - "chaves"
+        - "parênteses"
+      correta: 0
+
+  - topico: introducao
+    enunciado: |
+      Complete o código para ler um valor digitado pelo usuário:
+
+      var nome = ___()
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "leia"
+
+  - topico: introducao
+    enunciado: |
+      Escreva um programa em Égua que exiba exatamente:
+      Primeiros passos
+    tipo: implementacao_livre
+    nivel_bloom: 1
+    gabarito:
+      descricao: "Use escreva() para exibir a frase Primeiros passos"
+    casos_de_teste:
+      - entrada: ""
+        saida_esperada: "Primeiros passos"
+
+  - topico: introducao
+    enunciado: |
+      Complete o código para exibir o texto "Entrada recebida":
+
+      ___("Entrada recebida")
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "escreva"
+
   # ── VARIÁVEIS ───────────────────────────────────────────────────────────────
 
   - topico: variaveis
@@ -83,6 +161,99 @@ exercicios:
       - entrada: "Ana"
         saida_esperada: "Ola, Ana!"
 
+  - topico: variaveis
+    enunciado: "Qual palavra-chave é usada para declarar uma variável em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "var"
+        - "let"
+        - "const"
+        - "def"
+      correta: 0
+
+  - topico: variaveis
+    enunciado: |
+      Complete o código para armazenar o número 10 na variável idade:
+
+      var idade = ___
+      escreva(idade)
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "10"
+
+  - topico: variaveis
+    enunciado: |
+      Leia uma cor e exiba a frase:
+      Cor escolhida: <cor>
+
+      Dica: use leia() e concatene strings com +
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Armazene a entrada em uma variável e concatene com a mensagem"
+    casos_de_teste:
+      - entrada: "azul"
+        saida_esperada: "Cor escolhida: azul"
+      - entrada: "verde"
+        saida_esperada: "Cor escolhida: verde"
+      - entrada: "roxo"
+        saida_esperada: "Cor escolhida: roxo"
+
+  - topico: variaveis
+    enunciado: "Qual opção representa um texto armazenado em uma variável?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "\"Maria\""
+        - "42"
+        - "verdadeiro"
+        - "falso"
+      correta: 0
+
+  - topico: variaveis
+    enunciado: |
+      Complete o código para mudar o valor da variável pontos para 20:
+
+      var pontos = 10
+      pontos = ___
+      escreva(pontos)
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "20"
+
+  - topico: variaveis
+    enunciado: |
+      Leia uma cidade e exiba:
+      Cidade: <cidade>
+
+      Dica: guarde a entrada em uma variável.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use uma variável para armazenar leia() e concatene com Cidade: "
+    casos_de_teste:
+      - entrada: "Belem"
+        saida_esperada: "Cidade: Belem"
+      - entrada: "Manaus"
+        saida_esperada: "Cidade: Manaus"
+      - entrada: "Recife"
+        saida_esperada: "Cidade: Recife"
+
+  - topico: variaveis
+    enunciado: |
+      Complete o código para declarar uma variável chamada ativo com valor verdadeiro:
+
+      var ativo = ___
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "verdadeiro"
+
   # ── OPERADORES ──────────────────────────────────────────────────────────────
 
   - topico: operadores
@@ -125,6 +296,100 @@ exercicios:
         saida_esperada: "6"
       - entrada: "0\n0"
         saida_esperada: "0"
+
+  - topico: operadores
+    enunciado: "Qual operador calcula o resto de uma divisão em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "/"
+        - "%"
+        - "*"
+        - "-"
+      correta: 1
+
+  - topico: operadores
+    enunciado: |
+      Complete o código para verificar se idade é maior ou igual a 18:
+
+      se (idade ___ 18) {
+        escreva("maior de idade")
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: ">="
+
+  - topico: operadores
+    enunciado: |
+      Leia dois números inteiros e exiba a diferença entre o primeiro e o segundo.
+
+      Dica: use inteiro(leia()) e o operador -
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Converta as entradas para inteiro e subtraia o segundo valor do primeiro"
+    casos_de_teste:
+      - entrada: "9\n4"
+        saida_esperada: "5"
+      - entrada: "3\n8"
+        saida_esperada: "-5"
+      - entrada: "10\n10"
+        saida_esperada: "0"
+
+  - topico: operadores
+    enunciado: "Qual operador é usado para multiplicar valores em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "+"
+        - "-"
+        - "*"
+        - "/"
+      correta: 2
+
+  - topico: operadores
+    enunciado: |
+      Complete com o operador lógico que representa "OU" (basta uma condição ser verdadeira):
+
+      se (idade < 12 ___ idade > 60) {
+        escreva("atendimento prioritario")
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "ou"
+
+  - topico: operadores
+    enunciado: |
+      Leia dois números inteiros e exiba o produto deles.
+
+      Dica: use inteiro(leia()) e o operador *
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Converta as duas entradas para inteiro e multiplique os valores"
+    casos_de_teste:
+      - entrada: "4\n3"
+        saida_esperada: "12"
+      - entrada: "7\n0"
+        saida_esperada: "0"
+      - entrada: "-2\n5"
+        saida_esperada: "-10"
+
+  - topico: operadores
+    enunciado: |
+      Complete o código para testar se numero é diferente de 0:
+
+      se (numero ___ 0) {
+        escreva("nao zero")
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "!="
 
   # ── CONDICIONAIS ────────────────────────────────────────────────────────────
 
@@ -178,6 +443,109 @@ exercicios:
       - entrada: "5\n5"
         saida_esperada: "5"
 
+  - topico: condicionais
+    enunciado: "Qual estrutura executa um bloco apenas quando uma condição é verdadeira?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "se"
+        - "para"
+        - "classe"
+        - "função"
+      correta: 0
+
+  - topico: condicionais
+    enunciado: |
+      Complete o código para exibir "aprovado" quando nota for maior ou igual a 7:
+
+      ___ (nota >= 7) {
+        escreva("aprovado")
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "se"
+
+  - topico: condicionais
+    enunciado: |
+      Leia uma idade e exiba:
+      - "maior" se a idade for maior ou igual a 18
+      - "menor" caso contrário
+
+      Dica: use inteiro(leia()) para converter a entrada.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use se/senão para comparar a idade com 18"
+    casos_de_teste:
+      - entrada: "18"
+        saida_esperada: "maior"
+      - entrada: "12"
+        saida_esperada: "menor"
+      - entrada: "25"
+        saida_esperada: "maior"
+
+  - topico: condicionais
+    enunciado: "Qual palavra-chave permite testar outra condição após um se falso?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "senão se"
+        - "para"
+        - "retorna"
+        - "construtor"
+      correta: 0
+
+  - topico: condicionais
+    enunciado: |
+      Complete o código para exibir "frio" quando temperatura for menor que 20:
+
+      se (temperatura ___ 20) {
+        escreva("frio")
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "<"
+
+  - topico: condicionais
+    enunciado: |
+      Leia uma nota inteira e exiba:
+      - "aprovado" se a nota for maior ou igual a 7
+      - "reprovado" caso contrário
+
+      Dica: use inteiro(leia()).
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use se/senão para comparar a nota com 7"
+    casos_de_teste:
+      - entrada: "7"
+        saida_esperada: "aprovado"
+      - entrada: "10"
+        saida_esperada: "aprovado"
+      - entrada: "5"
+        saida_esperada: "reprovado"
+
+  - topico: condicionais
+    enunciado: |
+      Leia um número inteiro e exiba:
+      - "par" se o resto da divisão por 2 for zero
+      - "impar" caso contrário
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use o operador % dentro de uma estrutura se/senão"
+    casos_de_teste:
+      - entrada: "2"
+        saida_esperada: "par"
+      - entrada: "9"
+        saida_esperada: "impar"
+      - entrada: "0"
+        saida_esperada: "par"
+
   # ── LAÇOS ───────────────────────────────────────────────────────────────────
 
   - topico: lacos
@@ -222,6 +590,105 @@ exercicios:
         saida_esperada: "6"
       - entrada: "10"
         saida_esperada: "55"
+
+  - topico: lacos
+    enunciado: "Em um laço para, qual parte normalmente atualiza o contador a cada repetição?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "inicialização"
+        - "condição"
+        - "incremento"
+        - "retorno"
+      correta: 2
+
+  - topico: lacos
+    enunciado: |
+      Complete o código para repetir enquanto contador for menor que 3:
+
+      var contador = 0
+      ___ (contador < 3) {
+        escreva(contador)
+        contador = contador + 1
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "enquanto"
+
+  - topico: lacos
+    enunciado: |
+      Leia um número inteiro N e exiba todos os números de 1 até N, um por vez.
+
+      Dica: use um laço para ou enquanto.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Use um laço iniciando em 1 e avançando até N"
+    casos_de_teste:
+      - entrada: "3"
+        saida_esperada: "1\n2\n3"
+      - entrada: "1"
+        saida_esperada: "1"
+      - entrada: "5"
+        saida_esperada: "1\n2\n3\n4\n5"
+
+  - topico: lacos
+    enunciado: "Qual estrutura é mais adequada para repetir um bloco um número conhecido de vezes?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "para"
+        - "classe"
+        - "retorna"
+        - "senão"
+      correta: 0
+
+  - topico: lacos
+    enunciado: |
+      Complete o incremento para avançar de 1 em 1:
+
+      para (var i = 0; i < 4; i = i ___ 1) {
+        escreva(i)
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "+"
+
+  - topico: lacos
+    enunciado: |
+      Leia um número inteiro N e exiba a tabuada de N de 1 até 3.
+
+      Exemplo: N=4 → 4, 8, 12
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Use um laço de 1 até 3 e exiba N * contador"
+    casos_de_teste:
+      - entrada: "4"
+        saida_esperada: "4\n8\n12"
+      - entrada: "2"
+        saida_esperada: "2\n4\n6"
+      - entrada: "5"
+        saida_esperada: "5\n10\n15"
+
+  - topico: lacos
+    enunciado: |
+      Leia um número inteiro N e exiba a contagem regressiva de N até 1.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Use um laço diminuindo o contador até chegar em 1"
+    casos_de_teste:
+      - entrada: "3"
+        saida_esperada: "3\n2\n1"
+      - entrada: "1"
+        saida_esperada: "1"
+      - entrada: "4"
+        saida_esperada: "4\n3\n2\n1"
 
   # ── FUNÇÕES ─────────────────────────────────────────────────────────────────
 
@@ -268,6 +735,106 @@ exercicios:
       - entrada: "6\n6"
         saida_esperada: "36"
 
+  - topico: funcoes
+    enunciado: "O que uma função permite fazer em um programa?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "Organizar e reutilizar um bloco de código"
+        - "Criar apenas listas"
+        - "Executar código somente uma vez"
+        - "Declarar somente textos"
+      correta: 0
+
+  - topico: funcoes
+    enunciado: |
+      Complete o código para retornar o valor recebido sem alterações:
+
+      função identidade(valor) {
+        ___ valor
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "retorna"
+
+  - topico: funcoes
+    enunciado: |
+      Escreva uma função chamada quadrado que receba um número e retorne esse número multiplicado por ele mesmo.
+      Leia um número inteiro, chame a função e exiba o resultado.
+
+      Dica: use inteiro(leia()) para converter a entrada.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Declare função quadrado(n) { retorna n * n } e exiba sua chamada"
+    casos_de_teste:
+      - entrada: "4"
+        saida_esperada: "16"
+      - entrada: "7"
+        saida_esperada: "49"
+      - entrada: "0"
+        saida_esperada: "0"
+
+  - topico: funcoes
+    enunciado: "Em uma chamada função soma(a, b), o que são a e b?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "parâmetros"
+        - "classes"
+        - "listas"
+        - "laços"
+      correta: 0
+
+  - topico: funcoes
+    enunciado: |
+      Complete o código para chamar a função saudacao:
+
+      função saudacao() {
+        escreva("oi")
+      }
+
+      ___()
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "saudacao"
+
+  - topico: funcoes
+    enunciado: |
+      Escreva uma função chamada somaTres que receba três números e retorne a soma deles.
+      Leia três números inteiros, chame a função e exiba o resultado.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Declare função somaTres(a, b, c) { retorna a + b + c }"
+    casos_de_teste:
+      - entrada: "1\n2\n3"
+        saida_esperada: "6"
+      - entrada: "5\n5\n5"
+        saida_esperada: "15"
+      - entrada: "10\n-2\n1"
+        saida_esperada: "9"
+
+  - topico: funcoes
+    enunciado: |
+      Escreva uma função chamada ehMaiorDez que receba um número e retorne "sim" se ele for maior que 10 ou "nao" caso contrário.
+      Leia um número inteiro, chame a função e exiba o retorno.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Use uma função com se/senão para retornar sim ou nao"
+    casos_de_teste:
+      - entrada: "11"
+        saida_esperada: "sim"
+      - entrada: "10"
+        saida_esperada: "nao"
+      - entrada: "3"
+        saida_esperada: "nao"
+
   # ── LISTAS ──────────────────────────────────────────────────────────────────
 
   - topico: listas
@@ -312,6 +879,97 @@ exercicios:
         saida_esperada: "goiaba"
       - entrada: "3"
         saida_esperada: "acerola"
+
+  - topico: listas
+    enunciado: "Em Égua, qual índice acessa o primeiro elemento de uma lista?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "0"
+        - "1"
+        - "-1"
+        - "primeiro"
+      correta: 0
+
+  - topico: listas
+    enunciado: |
+      Complete o código para exibir o primeiro item da lista:
+
+      var letras = ["a", "b", "c"]
+      escreva(letras[___])
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "0"
+
+  - topico: listas
+    enunciado: |
+      Dada a lista abaixo, leia um índice e exiba o dobro do número nessa posição:
+      var numeros = [2, 4, 6, 8]
+
+      Dica: use inteiro(leia()) para converter o índice.
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Acesse a lista pelo índice lido e multiplique o elemento por 2"
+    casos_de_teste:
+      - entrada: "0"
+        saida_esperada: "4"
+      - entrada: "1"
+        saida_esperada: "8"
+      - entrada: "3"
+        saida_esperada: "16"
+
+  - topico: listas
+    enunciado: "Qual sintaxe acessa o elemento no índice 2 da lista numeros?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "numeros[2]"
+        - "numeros(2)"
+        - "numeros{2}"
+        - "numeros.2"
+      correta: 0
+
+  - topico: listas
+    enunciado: |
+      Complete a lista para que ela tenha três elementos:
+
+      var vogais = ["a", ___, "i"]
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "\"e\""
+
+  - topico: listas
+    enunciado: |
+      Dada a lista abaixo, leia um índice e exiba o item correspondente:
+      var animais = ["gato", "cao", "peixe"]
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Declare a lista animais e acesse pelo índice lido"
+    casos_de_teste:
+      - entrada: "0"
+        saida_esperada: "gato"
+      - entrada: "1"
+        saida_esperada: "cao"
+      - entrada: "2"
+        saida_esperada: "peixe"
+
+  - topico: listas
+    enunciado: |
+      Dada a lista abaixo, exiba o tamanho dela:
+      var notas = [7, 8, 9]
+    tipo: implementacao_livre
+    nivel_bloom: 2
+    gabarito:
+      descricao: "Use tamanho(notas) para exibir a quantidade de elementos"
+    casos_de_teste:
+      - entrada: ""
+        saida_esperada: "3"
 
   # ── CLASSES ─────────────────────────────────────────────────────────────────
 
@@ -361,3 +1019,112 @@ exercicios:
         saida_esperada: "21"
       - entrada: "6\n6"
         saida_esperada: "36"
+
+  - topico: classes
+    enunciado: "Qual método especial inicializa os atributos de um objeto em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "inicio"
+        - "construtor"
+        - "novo"
+        - "criar"
+      correta: 1
+
+  - topico: classes
+    enunciado: |
+      Complete o código para guardar o nome no atributo do objeto atual:
+
+      classe Pessoa {
+        construtor(nome) {
+          ___.nome = nome
+        }
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "isto"
+
+  - topico: classes
+    enunciado: |
+      Crie uma classe Produto com:
+      - construtor(nome, preco) que armazena os dois valores
+      - método resumo() que retorna nome + ": " + preco
+
+      Leia o nome e o preço, crie um Produto e exiba o resumo.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "classe Produto com construtor e método resumo() usando isto.nome e isto.preco"
+    casos_de_teste:
+      - entrada: "lapis\n2"
+        saida_esperada: "lapis: 2"
+      - entrada: "caderno\n15"
+        saida_esperada: "caderno: 15"
+      - entrada: "borracha\n3"
+        saida_esperada: "borracha: 3"
+
+  - topico: classes
+    enunciado: "Dentro de uma classe, o que normalmente chamamos de função associada ao objeto?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "método"
+        - "lista"
+        - "operador"
+        - "laço"
+      correta: 0
+
+  - topico: classes
+    enunciado: |
+      Complete o código para declarar o construtor da classe Pessoa:
+
+      classe Pessoa {
+        ___(nome) {
+          isto.nome = nome
+        }
+      }
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "construtor"
+
+  - topico: classes
+    enunciado: |
+      Crie uma classe Saudacao com:
+      - construtor(nome) que armazena o nome
+      - método mensagem() que retorna "Ola, " + nome
+
+      Leia um nome, crie uma Saudacao e exiba a mensagem.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "Use isto.nome no construtor e retorne Ola, concatenado com o nome"
+    casos_de_teste:
+      - entrada: "Ana"
+        saida_esperada: "Ola, Ana"
+      - entrada: "Bruno"
+        saida_esperada: "Ola, Bruno"
+      - entrada: "Clara"
+        saida_esperada: "Ola, Clara"
+
+  - topico: classes
+    enunciado: |
+      Crie uma classe Quadrado com:
+      - construtor(lado) que armazena o lado
+      - método perimetro() que retorna lado * 4
+
+      Leia o lado como inteiro, crie um Quadrado e exiba o perímetro.
+    tipo: implementacao_livre
+    nivel_bloom: 3
+    gabarito:
+      descricao: "classe Quadrado com construtor e método perimetro()"
+    casos_de_teste:
+      - entrada: "3"
+        saida_esperada: "12"
+      - entrada: "5"
+        saida_esperada: "20"
+      - entrada: "1"
+        saida_esperada: "4"

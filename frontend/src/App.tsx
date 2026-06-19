@@ -1,18 +1,20 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ProgressoProvider } from "./hooks/useProgresso";
 import { Dashboard } from "./pages/Dashboard";
 import { Exercicio } from "./pages/Exercicio";
+import { Historico } from "./pages/Historico";
 import { Login } from "./pages/Login";
 
 function ProtectedLayout() {
-  const token = localStorage.getItem("token");
-  if (!token) return <Navigate to="/login" />;
   return (
-    <ProgressoProvider>
-      <Navbar />
-      <Outlet />
-    </ProgressoProvider>
+    <ProtectedRoute>
+      <ProgressoProvider>
+        <Navbar />
+        <Outlet />
+      </ProgressoProvider>
+    </ProtectedRoute>
   );
 }
 
@@ -25,6 +27,7 @@ function App() {
         <Route element={<ProtectedLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/exercicio" element={<Exercicio />} />
+          <Route path="/historico" element={<Historico />} />
         </Route>
         <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
       </Routes>

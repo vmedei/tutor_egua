@@ -10,6 +10,7 @@ interface Mensagem {
 interface Props {
   topicoNome: string;
   exercicioEnunciado: string;
+  onMensagemEnviada?: () => void;
 }
 
 const BOAS_VINDAS = (topico: string) =>
@@ -19,7 +20,7 @@ const styleTag = document.createElement("style");
 styleTag.textContent = `@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }`;
 document.head.appendChild(styleTag);
 
-export function ChatBot({ topicoNome, exercicioEnunciado }: Props) {
+export function ChatBot({ topicoNome, exercicioEnunciado, onMensagemEnviada }: Props) {
   const [aberto, setAberto] = useState(false);
   const [historico, setHistorico] = useState<Mensagem[]>([]);
   const [input, setInput] = useState("");
@@ -57,6 +58,7 @@ export function ChatBot({ topicoNome, exercicioEnunciado }: Props) {
     setHistorico(historicoAtualizado);
     setInput("");
     setCarregando(true);
+    onMensagemEnviada?.();
 
     try {
       const { data } = await api.post("/chat/", {

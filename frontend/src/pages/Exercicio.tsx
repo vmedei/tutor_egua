@@ -180,7 +180,7 @@ export function Exercicio() {
     <div style={S.page}>
       <h2 style={{ marginBottom: 4 }}>Exercício</h2>
       <p style={{ color: "#6c757d", marginBottom: 20, fontSize: 13 }}>
-        Tópico · {exercicio.tipo.replace("_", " ")}
+        {exercicio.topico_nome} · {exercicio.tipo.replace("_", " ")}
       </p>
 
       {/* Enunciado */}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { GrafoProgresso } from "../components/GrafoProgresso";
 import { ProgressoPorTopicoChart } from "../components/ProgressoPorTopicoChart";
 import { useProgresso } from "../hooks/useProgresso";
 
@@ -85,7 +86,28 @@ export function Dashboard() {
           </button>
         </div>
       ) : (
-        <ProgressoPorTopicoChart dados={porTopico} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.1fr)",
+            gap: 20,
+            alignItems: "start",
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, color: "#5b6570" }}>
+              Visão clássica
+            </div>
+            <ProgressoPorTopicoChart dados={porTopico} />
+          </div>
+
+          <div style={{ minWidth: 0 }}>
+            <div style={{ marginBottom: 10, fontSize: 13, fontWeight: 700, color: "#5b6570" }}>
+              Mapa de conhecimento
+            </div>
+            <GrafoProgresso porTopico={porTopico} compacto />
+          </div>
+        </div>
       )}
 
       <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/client";
 import { ChatBot } from "../components/ChatBot";
+import { useProgresso } from "../hooks/useProgresso";
 
 interface CasoTeste {
   entrada: string;
@@ -82,6 +83,7 @@ export function Exercicio() {
   const [execucao, setExecucao] = useState<ResultadoExecucao | null>(null);
   const [submissao, setSubmissao] = useState<ResultadoSubmissao | null>(null);
   const [dicasUsadas, setDicasUsadas] = useState(0);
+  const { recarregar } = useProgresso();
 
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
@@ -141,6 +143,7 @@ export function Exercicio() {
         dicas_usadas: dicasUsadas,
       });
       setSubmissao(data);
+      recarregar();
     } catch {
       setErro("Erro ao submeter resposta.");
     } finally {

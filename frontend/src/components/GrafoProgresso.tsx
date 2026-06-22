@@ -35,9 +35,9 @@ function statusFromPct(pct: number): StatusProgresso {
 }
 
 function statusColor(status: StatusProgresso) {
-  if (status === "dominado") return "#117a7a";
-  if (status === "em progresso") return "#f0a43c";
-  return "#d6eaee";
+  if (status === "dominado") return "#198754";
+  if (status === "em progresso") return "#d97706";
+  return "#94a3b8";
 }
 
 function statusLabel(status: StatusProgresso) {
@@ -48,8 +48,8 @@ function statusLabel(status: StatusProgresso) {
 
 function legendItem(color: string, label: string) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#5c6970" }}>
-      <span style={{ width: 14, height: 14, borderRadius: 999, background: color, display: "inline-block" }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#64748b" }}>
+      <span style={{ width: 12, height: 12, borderRadius: 999, background: color, display: "inline-block" }} />
       <span>{label}</span>
     </div>
   );
@@ -118,107 +118,134 @@ export function GrafoProgresso({ porTopico, compacto = false }: Props) {
   }, [nodes]);
 
   return (
-    <div
-      style={{
-        minHeight: compacto ? 460 : 740,
-        border: "1px solid #d8e3e6",
-        borderRadius: 20,
-        overflow: "hidden",
-        background: "linear-gradient(180deg, #f7fcfd 0%, #ffffff 100%)",
-        boxShadow: "0 12px 30px rgba(20, 35, 40, 0.06)",
-      }}
-    >
+    <div className="card graph-card" style={{ minHeight: compacto ? undefined : 720 }}>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           gap: 16,
-          padding: "18px 20px 10px",
+          padding: "20px 20px 10px",
           flexWrap: "wrap",
         }}
       >
         <div>
-          <strong style={{ fontSize: 18, color: "#18363d" }}>Mapa de progresso</strong>
-          <div style={{ fontSize: 13, color: "#648088", marginTop: 4 }}>
+          <strong style={{ fontSize: 18, color: "#243042" }}>Mapa de progresso</strong>
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
             Os mesmos dados do progresso por tópico, organizados como grafo de pré-requisitos.
           </div>
         </div>
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-          {legendItem("#d6eaee", "Iniciante")}
-          {legendItem("#f0a43c", "Em progresso")}
-          {legendItem("#117a7a", "Dominado")}
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+          {compacto && (
+            <span style={{ fontSize: 12, color: "#64748b", fontWeight: 800 }}>
+              {nodes.length} tópicos
+            </span>
+          )}
+          {legendItem("#94a3b8", "Iniciante")}
+          {legendItem("#d97706", "Em progresso")}
+          {legendItem("#198754", "Dominado")}
         </div>
       </div>
 
-      <div style={{ position: "relative", width: "100%", height: stageHeight, overflowX: "auto" }}>
-        <svg
-          width={stageWidth}
-          height={stageHeight}
-          viewBox={`0 0 ${stageWidth} ${stageHeight}`}
-          preserveAspectRatio="none"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
-        >
-          <defs />
-          {paths.map((path) => (
-            <path
-              key={path.key}
-              d={path.d}
-              fill="none"
-              stroke="rgba(119, 151, 160, 0.42)"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          ))}
-        </svg>
+      {!compacto && (
+        <div className="graph-stage" style={{ height: stageHeight }}>
+          <svg
+            width={stageWidth}
+            height={stageHeight}
+            viewBox={`0 0 ${stageWidth} ${stageHeight}`}
+            preserveAspectRatio="none"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+          >
+            {paths.map((path) => (
+              <path
+                key={path.key}
+                d={path.d}
+                fill="none"
+                stroke="rgba(111, 66, 193, 0.24)"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            ))}
+          </svg>
 
+          {nodes.map((node) => (
+            <div
+              key={node.id}
+              style={{
+                position: "absolute",
+                left: node.position.x,
+                top: node.position.y,
+                width: NODE_WIDTH,
+                height: NODE_HEIGHT,
+                borderRadius: 14,
+                background: "#fff",
+                border: "1px solid #e7e0f2",
+                boxShadow: "0 8px 20px rgba(67, 32, 111, 0.08)",
+                padding: "14px 14px 12px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: 5,
+              }}
+            >
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#243042", lineHeight: 1.2 }}>
+                {node.nome}
+              </div>
+              <div style={{ fontSize: 13, color: "#475569", fontWeight: 800 }}>{node.pct}%</div>
+              <div
+                style={{
+                  height: 7,
+                  borderRadius: 999,
+                  background: "#ede7f7",
+                  overflow: "hidden",
+                  marginTop: 2,
+                }}
+              >
+                <div
+                  style={{
+                    width: `${node.pct}%`,
+                    height: "100%",
+                    borderRadius: 999,
+                    background: statusColor(node.status),
+                    transition: "width 180ms ease",
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>
+                {statusLabel(node.status)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={compacto ? "graph-list graph-list-scroll" : "graph-mobile-list"}>
         {nodes.map((node) => (
           <div
             key={node.id}
             style={{
-              position: "absolute",
-              left: node.position.x,
-              top: node.position.y,
-              width: NODE_WIDTH,
-              height: NODE_HEIGHT,
-              borderRadius: 18,
-              background: "linear-gradient(180deg, #d8eef1 0%, #cfe8eb 100%)",
-              border: "1px solid rgba(108, 160, 167, 0.25)",
-              boxShadow: "0 10px 24px rgba(30, 88, 96, 0.08)",
-              padding: "14px 14px 12px",
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              gap: 5,
+              border: "1px solid #e7e0f2",
+              borderRadius: 14,
+              padding: 12,
+              background: "#fff",
             }}
           >
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#11323a", lineHeight: 1.2 }}>
-              {node.nome}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+              <strong style={{ color: "#243042", fontSize: 14 }}>{node.nome}</strong>
+              <span style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>{statusLabel(node.status)}</span>
             </div>
-            <div style={{ fontSize: 13, color: "#4d6570", fontWeight: 600 }}>{node.pct}%</div>
-            <div
-              style={{
-                height: 7,
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.72)",
-                overflow: "hidden",
-                marginTop: 2,
-              }}
-            >
+            <div style={{ height: 8, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 10 }}>
               <div
                 style={{
                   width: `${node.pct}%`,
                   height: "100%",
                   borderRadius: 999,
                   background: statusColor(node.status),
-                  transition: "width 180ms ease",
                 }}
               />
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#5b767f" }}>
-              {statusLabel(node.status)}
-            </div>
+            <div style={{ marginTop: 6, color: "#475569", fontSize: 12, fontWeight: 800 }}>{node.pct}%</div>
           </div>
         ))}
       </div>

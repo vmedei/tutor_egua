@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import api from "../api/client";
 import { ChatBot } from "../components/ChatBot";
@@ -38,36 +39,40 @@ interface ResultadoSubmissao {
 }
 
 const S = {
-  page: { padding: 24, maxWidth: 860, margin: "0 auto", fontFamily: "sans-serif" } as React.CSSProperties,
-  card: { background: "#f8f9fa", border: "1px solid #dee2e6", borderRadius: 8, padding: 20, marginBottom: 20 } as React.CSSProperties,
-  enunciado: { whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 15 } as React.CSSProperties,
+  enunciado: { whiteSpace: "pre-wrap", lineHeight: 1.75, fontSize: 15, margin: 0 } as CSSProperties,
   editor: {
-    width: "100%", minHeight: 200, fontFamily: "monospace", fontSize: 14,
-    padding: 14, border: "1px solid #495057", borderRadius: 6,
-    background: "#1e1e1e", color: "#d4d4d4", resize: "vertical",
-    boxSizing: "border-box", lineHeight: 1.6,
-  } as React.CSSProperties,
-  btnPrimary: {
-    padding: "10px 28px", background: "#0d6efd", color: "#fff",
-    border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600, fontSize: 14,
-  } as React.CSSProperties,
-  btnSecondary: {
-    padding: "10px 20px", background: "#fff", color: "#333",
-    border: "1px solid #ccc", borderRadius: 6, cursor: "pointer", fontSize: 14,
-  } as React.CSSProperties,
-  btnSuccess: {
-    padding: "10px 28px", background: "#198754", color: "#fff",
-    border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 600, fontSize: 14,
-  } as React.CSSProperties,
-  btnDisabled: { opacity: 0.6, cursor: "not-allowed" } as React.CSSProperties,
-  tag: (ok: boolean): React.CSSProperties => ({
-    display: "inline-block", padding: "2px 10px", borderRadius: 12, fontSize: 12, fontWeight: 700,
-    background: ok ? "#d1fae5" : "#fee2e2", color: ok ? "#065f46" : "#991b1b",
+    width: "100%",
+    minHeight: 230,
+    fontFamily: '"Fira Code", "Consolas", monospace',
+    fontSize: 14,
+    padding: 16,
+    border: "1px solid #334155",
+    borderRadius: 14,
+    background: "#1f2937",
+    color: "#e5e7eb",
+    resize: "vertical",
+    lineHeight: 1.6,
+    boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.03)",
+  } as CSSProperties,
+  tag: (ok: boolean): CSSProperties => ({
+    display: "inline-flex",
+    justifyContent: "center",
+    minWidth: 42,
+    padding: "3px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 800,
+    background: ok ? "#d1fae5" : "#fee2e2",
+    color: ok ? "#065f46" : "#991b1b",
   }),
-  feedbackBox: (ok: boolean): React.CSSProperties => ({
-    marginTop: 16, padding: 16, borderRadius: 8, lineHeight: 1.7,
-    background: ok ? "#d1fae5" : "#fff3cd",
-    border: `1px solid ${ok ? "#6ee7b7" : "#fcd34d"}`,
+  feedbackBox: (ok: boolean): CSSProperties => ({
+    marginTop: 18,
+    padding: 20,
+    borderRadius: 16,
+    lineHeight: 1.7,
+    background: ok ? "#f0fdf4" : "#fffbeb",
+    border: `1px solid ${ok ? "#9fd7b4" : "#f6d477"}`,
+    boxShadow: "0 12px 28px rgba(15, 23, 42, 0.07)",
   }),
 };
 
@@ -97,7 +102,8 @@ export function Exercicio() {
     setErro(null);
     setConcluido(false);
     setCarregando(true);
-    api.get(`/tutor/proximo-exercicio/${alunoId}`)
+    api
+      .get(`/tutor/proximo-exercicio/${alunoId}`)
       .then(({ data }) => setExercicio(data))
       .catch((e) => {
         if (e?.response?.status === 404) setConcluido(true);
@@ -107,9 +113,13 @@ export function Exercicio() {
   };
 
   useEffect(() => {
-    if (!alunoId) { setErro("Sessão inválida. Faça login novamente."); setCarregando(false); return; }
+    if (!alunoId) {
+      setErro("Sessão inválida. Faça login novamente.");
+      setCarregando(false);
+      return;
+    }
     carregarProximo();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const executar = async () => {
@@ -151,214 +161,275 @@ export function Exercicio() {
     }
   };
 
-  if (carregando) return <p style={{ padding: 24 }}>Carregando exercício...</p>;
-  if (erro) return <p style={{ padding: 24, color: "#dc3545" }}>{erro}</p>;
-  if (concluido) return (
-    <div style={{ padding: 40, maxWidth: 560, margin: "0 auto", textAlign: "center", fontFamily: "sans-serif" }}>
-      <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ marginBottom: 8 }}>Parabéns!</h2>
-      <p style={{ color: "#555", lineHeight: 1.7 }}>
-        Você concluiu todos os exercícios disponíveis.<br />
-        Continue praticando na IDEgua ou aguarde novos conteúdos.
-      </p>
-      <a
-        href="http://programar.egua.dev/"
-        target="_blank"
-        rel="noreferrer"
-        style={{ display: "inline-block", marginTop: 20, padding: "10px 24px", background: "#0d6efd", color: "#fff", borderRadius: 6, textDecoration: "none", fontWeight: 600 }}
-      >
-        Abrir IDEgua
-      </a>
-    </div>
-  );
+  if (carregando) {
+    return (
+      <main className="page page-narrow">
+        <div className="notice">Carregando exercício...</div>
+      </main>
+    );
+  }
+
+  if (erro) {
+    return (
+      <main className="page page-narrow">
+        <div className="notice notice-error">
+          <strong>Algo deu errado.</strong>
+          <p style={{ margin: "6px 0 0" }}>{erro}</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (concluido) {
+    return (
+      <main className="page page-narrow" style={{ textAlign: "center" }}>
+        <div className="card exercise-card">
+          <span className="icon-badge" aria-hidden="true" style={{ margin: "0 auto 12px" }}>✓</span>
+          <h2 className="page-title" style={{ fontSize: 28 }}>
+            Parabéns!
+          </h2>
+          <p className="page-subtitle" style={{ margin: "8px auto 22px", maxWidth: 560 }}>
+            Você concluiu todos os exercícios disponíveis. Continue praticando na IDEgua ou aguarde novos conteúdos.
+          </p>
+          <a
+            href="http://programar.egua.dev/"
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-primary"
+            style={{ textDecoration: "none" }}
+          >
+            Abrir IDEgua ↗
+          </a>
+        </div>
+      </main>
+    );
+  }
+
   if (!exercicio) return null;
 
   const eLivre = exercicio.tipo === "implementacao_livre";
   const casos = exercicio.casos_de_teste ?? [];
 
   return (
-    <div style={S.page}>
-      <h2 style={{ marginBottom: 4 }}>Exercício</h2>
-      <p style={{ color: "#6c757d", marginBottom: 20, fontSize: 13 }}>
-        {exercicio.topico_nome} · {exercicio.tipo.replace("_", " ")}
-      </p>
-
-      {/* Enunciado */}
-      <div style={S.card}>
-        <p style={S.enunciado}>{exercicio.enunciado}</p>
-      </div>
-
-      {/* Casos de teste visíveis (só para implementação livre) */}
-      {eLivre && casos.length > 0 && (
-        <div style={{ ...S.card, background: "#fff" }}>
-          <strong style={{ fontSize: 13 }}>Exemplos de entrada/saída:</strong>
-          <table style={{ width: "100%", marginTop: 10, borderCollapse: "collapse", fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: "#e9ecef" }}>
-                <th style={{ padding: "6px 10px", textAlign: "left" }}>Entrada</th>
-                <th style={{ padding: "6px 10px", textAlign: "left" }}>Saída esperada</th>
-              </tr>
-            </thead>
-            <tbody>
-              {casos.map((c, i) => (
-                <tr key={i} style={{ borderTop: "1px solid #dee2e6" }}>
-                  <td style={{ padding: "6px 10px", fontFamily: "monospace" }}>{c.entrada || "(nenhuma)"}</td>
-                  <td style={{ padding: "6px 10px", fontFamily: "monospace" }}>{c.saida_esperada}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <main className="page page-narrow">
+      <section className="hero-panel" style={{ gridTemplateColumns: "1fr" }}>
+        <div>
+          <p className="hero-kicker">Prática guiada</p>
+          <h2 className="hero-title">Exercício</h2>
+          <p className="page-subtitle">
+            {exercicio.topico_nome} · {exercicio.tipo.replace(/_/g, " ")}
+          </p>
         </div>
-      )}
+      </section>
 
-      {/* Múltipla escolha */}
-      {exercicio.tipo === "multipla_escolha" && exercicio.gabarito?.opcoes && (
-        <div style={{ marginBottom: 20 }}>
-          {exercicio.gabarito.opcoes.map((op, i) => (
-            <label key={i} style={{ display: "block", padding: "10px 14px", marginBottom: 8, border: "1px solid #dee2e6", borderRadius: 6, cursor: "pointer", background: resposta === String(i) ? "#e7f1ff" : "#fff" }}>
-              <input type="radio" name="opcao" value={String(i)} onChange={(e) => setResposta(e.target.value)} style={{ marginRight: 10 }} />
-              {op}
-            </label>
-          ))}
-        </div>
-      )}
-
-      {/* Completar código */}
-      {exercicio.tipo === "completar_codigo" && (
-        <input
-          value={resposta}
-          onChange={(e) => setResposta(e.target.value)}
-          placeholder="Digite a palavra que completa o código"
-          style={{ width: "100%", padding: 10, fontSize: 15, borderRadius: 6, border: "1px solid #ccc", boxSizing: "border-box", marginBottom: 16 }}
-        />
-      )}
-
-      {/* Editor de código */}
-      {eLivre && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <span style={{ fontSize: 13, color: "#495057", fontWeight: 600 }}>Seu código em Égua:</span>
-            <a href="http://programar.egua.dev/" target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#0d6efd" }}>
-              Abrir IDEgua ↗
-            </a>
+      <div className="exercise-shell">
+        <section className="card card-soft exercise-card">
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <span className="icon-badge" aria-hidden="true">?</span>
+            <strong style={{ color: "#334155" }}>Enunciado</strong>
           </div>
-          <textarea
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            placeholder={"escreva(\"olá mundo\")"}
-            style={S.editor}
-            spellCheck={false}
-            onKeyDown={(e) => {
-              if (e.key === "Tab") {
-                e.preventDefault();
-                const s = e.currentTarget;
-                const v = s.value;
-                s.value = v.substring(0, s.selectionStart) + "    " + v.substring(s.selectionEnd);
-                s.selectionStart = s.selectionEnd = s.selectionStart + 4 - (v.length - s.value.length + 4);
-                setCodigo(s.value);
-              }
-            }}
-          />
-        </div>
-      )}
+          <p style={S.enunciado}>{exercicio.enunciado}</p>
+        </section>
 
-      {/* Botões — ocultos após submissão */}
-      {!submissao && (
-        <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-          {eLivre && (
-            <button
-              onClick={executar}
-              disabled={executando || !codigo.trim()}
-              style={{ ...S.btnSecondary, ...(executando || !codigo.trim() ? S.btnDisabled : {}) }}
-            >
-              {executando ? "Executando..." : "▶ Executar"}
-            </button>
-          )}
-          <button
-            onClick={submeter}
-            disabled={submetendo}
-            style={{ ...S.btnPrimary, ...(submetendo ? S.btnDisabled : {}) }}
-          >
-            {submetendo ? "Submetendo..." : "✓ Submeter"}
-          </button>
-        </div>
-      )}
-
-      {/* Resultado da execução (rascunho) */}
-      {execucao && !submissao && (
-        <div style={{ marginBottom: 20 }}>
-          <strong style={{ fontSize: 14 }}>Resultado da execução:</strong>
-          {execucao.erro && (
-            <pre style={{ background: "#fff3cd", padding: 12, borderRadius: 6, marginTop: 8, fontSize: 13, whiteSpace: "pre-wrap" }}>
-              ⚠️ {execucao.erro}
-            </pre>
-          )}
-          {execucao.saidas.length > 0 && (
-            <table style={{ width: "100%", marginTop: 10, borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: "#e9ecef" }}>
-                  <th style={{ padding: "6px 10px", textAlign: "left" }}>Entrada</th>
-                  <th style={{ padding: "6px 10px", textAlign: "left" }}>Esperado</th>
-                  <th style={{ padding: "6px 10px", textAlign: "left" }}>Obtido</th>
-                  <th style={{ padding: "6px 10px", textAlign: "center" }}>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {execucao.saidas.map((s, i) => (
-                  <tr key={i} style={{ borderTop: "1px solid #dee2e6", background: s.correto ? "#f0fdf4" : "#fff5f5" }}>
-                    <td style={{ padding: "6px 10px", fontFamily: "monospace" }}>{s.entrada || "—"}</td>
-                    <td style={{ padding: "6px 10px", fontFamily: "monospace" }}>{s.saida_esperada || "—"}</td>
-                    <td style={{ padding: "6px 10px", fontFamily: "monospace" }}>{s.saida_obtida || "—"}</td>
-                    <td style={{ padding: "6px 10px", textAlign: "center" }}>
-                      <span style={S.tag(s.correto)}>{s.correto ? "✓" : "✗"}</span>
-                    </td>
+        {eLivre && casos.length > 0 && (
+          <section className="card exercise-card">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="icon-badge" aria-hidden="true">↔</span>
+              <strong style={{ fontSize: 14, color: "#334155" }}>Exemplos de entrada/saída</strong>
+            </div>
+            <div className="table-wrap" style={{ marginTop: 12 }}>
+              <table className="clean-table">
+                <thead>
+                  <tr>
+                    <th>Entrada</th>
+                    <th>Saída esperada</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {execucao.todos_corretos && (
-            <p style={{ color: "#065f46", marginTop: 8, fontWeight: 600 }}>
-              Todos os casos passaram! Clique em "Submeter" para registrar.
-            </p>
-          )}
-        </div>
-      )}
+                </thead>
+                <tbody>
+                  {casos.map((c, i) => (
+                    <tr key={i}>
+                      <td style={{ fontFamily: "monospace" }}>{c.entrada || "(nenhuma)"}</td>
+                      <td style={{ fontFamily: "monospace" }}>{c.saida_esperada}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
-      {/* Chatbot de apoio */}
-      <ChatBot
-        topicoNome={exercicio.topico_nome ?? exercicio.tipo.replace(/_/g, " ")}
-        exercicioEnunciado={exercicio.enunciado}
-        onMensagemEnviada={() => setDicasUsadas((total) => total + 1)}
-      />
+        {exercicio.tipo === "multipla_escolha" && exercicio.gabarito?.opcoes && (
+          <section className="card exercise-card">
+            <div style={{ display: "grid", gap: 10 }}>
+              {exercicio.gabarito.opcoes.map((op, i) => (
+                <label
+                  key={i}
+                  className={`card option-card ${resposta === String(i) ? "option-card-selected" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="opcao"
+                    value={String(i)}
+                    onChange={(e) => setResposta(e.target.value)}
+                  />
+                  {op}
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
 
-      {/* Resultado da submissão */}
-      {submissao && (
-        <div style={S.feedbackBox(submissao.correto)}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            <span style={{ fontSize: 20 }}>{submissao.correto ? "✅" : "❌"}</span>
-            <strong>{submissao.correto ? "Correto!" : "Resposta incorreta"}</strong>
-            {submissao.delta_proficiencia !== 0 && (
-              <span style={{ fontSize: 12, color: "#555" }}>
-                ({submissao.delta_proficiencia > 0 ? "+" : ""}{(submissao.delta_proficiencia * 100).toFixed(0)}% proficiência)
-              </span>
+        {exercicio.tipo === "completar_codigo" && (
+          <section className="card exercise-card">
+            <label className="form-field" style={{ margin: 0 }}>
+              <span>Resposta</span>
+              <input
+                value={resposta}
+                onChange={(e) => setResposta(e.target.value)}
+                placeholder="Digite a palavra que completa o código"
+                className="input"
+              />
+            </label>
+          </section>
+        )}
+
+        {eLivre && (
+          <section className="card exercise-card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span className="icon-badge" aria-hidden="true">{`{}`}</span>
+                <strong style={{ color: "#334155" }}>Seu código em Égua</strong>
+              </div>
+              <a href="http://programar.egua.dev/" target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#5c2e91", fontWeight: 800 }}>
+                Abrir IDEgua ↗
+              </a>
+            </div>
+            <textarea
+              value={codigo}
+              onChange={(e) => setCodigo(e.target.value)}
+              placeholder={'escreva("olá mundo")'}
+              style={S.editor}
+              spellCheck={false}
+              onKeyDown={(e) => {
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  const s = e.currentTarget;
+                  const v = s.value;
+                  s.value = v.substring(0, s.selectionStart) + "    " + v.substring(s.selectionEnd);
+                  s.selectionStart = s.selectionEnd = s.selectionStart + 4 - (v.length - s.value.length + 4);
+                  setCodigo(s.value);
+                }
+              }}
+            />
+          </section>
+        )}
+
+        {!submissao && (
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            {eLivre && (
+              <button onClick={executar} disabled={executando || !codigo.trim()} className="btn-muted">
+                <span aria-hidden="true">▶</span>
+                {executando ? "Executando..." : "Executar"}
+              </button>
             )}
+            <button onClick={submeter} disabled={submetendo} className="btn-primary">
+              <span aria-hidden="true">✓</span>
+              {submetendo ? "Submetendo..." : "Submeter"}
+            </button>
           </div>
-          {submissao.detalhe && (
-            <p style={{ fontSize: 13, color: "#555", marginBottom: submissao.feedback ? 8 : 12 }}>
-              {submissao.detalhe}
-            </p>
-          )}
-          {submissao.feedback && (
-            <p style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.7, marginBottom: 12 }}>
-              <strong>Dica da IA:</strong> {submissao.feedback}
-            </p>
-          )}
-          <button onClick={carregarProximo} style={S.btnSuccess}>
-            Próxima questão →
-          </button>
-        </div>
-      )}
-    </div>
+        )}
+
+        {execucao && !submissao && (
+          <section className="card exercise-card">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="icon-badge" aria-hidden="true">▶</span>
+              <strong style={{ fontSize: 14 }}>Resultado da execução</strong>
+            </div>
+            {execucao.erro && (
+              <pre
+                style={{
+                  background: "#fffbeb",
+                  border: "1px solid #f6d477",
+                  padding: 12,
+                  borderRadius: 12,
+                  marginTop: 12,
+                  fontSize: 13,
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {execucao.erro}
+              </pre>
+            )}
+            {execucao.saidas.length > 0 && (
+              <div className="table-wrap" style={{ marginTop: 12 }}>
+                <table className="clean-table">
+                  <thead>
+                    <tr>
+                      <th>Entrada</th>
+                      <th>Esperado</th>
+                      <th>Obtido</th>
+                      <th style={{ textAlign: "center" }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {execucao.saidas.map((s, i) => (
+                      <tr key={i}>
+                        <td style={{ fontFamily: "monospace" }}>{s.entrada || "-"}</td>
+                        <td style={{ fontFamily: "monospace" }}>{s.saida_esperada || "-"}</td>
+                        <td style={{ fontFamily: "monospace" }}>{s.saida_obtida || "-"}</td>
+                        <td style={{ textAlign: "center" }}>
+                          <span style={S.tag(s.correto)}>{s.correto ? "OK" : "Erro"}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {execucao.todos_corretos && (
+              <p style={{ color: "#065f46", margin: "12px 0 0", fontWeight: 800 }}>
+                Todos os casos passaram. Clique em "Submeter" para registrar.
+              </p>
+            )}
+          </section>
+        )}
+
+        <ChatBot
+          topicoNome={exercicio.topico_nome ?? exercicio.tipo.replace(/_/g, " ")}
+          exercicioEnunciado={exercicio.enunciado}
+          onMensagemEnviada={() => setDicasUsadas((total) => total + 1)}
+        />
+
+        {submissao && (
+          <section style={S.feedbackBox(submissao.correto)}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+              <span className={`icon-badge ${submissao.correto ? "chip-success" : "chip-error"}`} aria-hidden="true">
+                {submissao.correto ? "✓" : "×"}
+              </span>
+              <strong>{submissao.correto ? "Correto!" : "Resposta incorreta"}</strong>
+              {submissao.delta_proficiencia !== 0 && (
+                <span style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>
+                  ({submissao.delta_proficiencia > 0 ? "+" : ""}
+                  {(submissao.delta_proficiencia * 100).toFixed(0)}% proficiência)
+                </span>
+              )}
+            </div>
+            {submissao.detalhe && (
+              <p style={{ fontSize: 13, color: "#475569", marginBottom: submissao.feedback ? 8 : 12 }}>
+                {submissao.detalhe}
+              </p>
+            )}
+            {submissao.feedback && (
+              <p style={{ whiteSpace: "pre-wrap", fontSize: 14, lineHeight: 1.7, marginBottom: 14 }}>
+                <strong>Dica da IA:</strong> {submissao.feedback}
+              </p>
+            )}
+            <button onClick={carregarProximo} className="btn-success">
+              Próxima questão →
+            </button>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }

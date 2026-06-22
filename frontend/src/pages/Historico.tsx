@@ -77,104 +77,97 @@ export function Historico() {
     }, {});
   }, [itens]);
 
+  const resumo = useMemo(() => {
+    const acertos = itens.filter((item) => item.acertou).length;
+    const dicas = itens.reduce((total, item) => total + item.dicas_usadas, 0);
+    const aproveitamento = itens.length ? Math.round((acertos / itens.length) * 100) : 0;
+    return { acertos, dicas, aproveitamento };
+  }, [itens]);
+
   return (
-    <div style={{ padding: 24, maxWidth: 980, margin: "0 auto" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          gap: 16,
-          marginBottom: 20,
-        }}
-      >
+    <main className="page" style={{ maxWidth: 980 }}>
+      <section className="hero-panel">
         <div>
-          <h2 style={{ margin: 0 }}>Histórico de Sessões</h2>
-          <p style={{ margin: "6px 0 0", color: "#6c757d", fontSize: 14 }}>
-            Reveja tentativas, acertos, dicas e mudanças de proficiência.
+          <p className="hero-kicker">Registro de prática</p>
+          <h2 className="hero-title">Histórico de sessões</h2>
+          <p className="page-subtitle" style={{ maxWidth: 620 }}>
+            Reveja tentativas, acertos, dicas e mudanças de proficiência ao longo dos exercícios.
           </p>
+          <div className="hero-actions">
+            <Link to="/dashboard" className="btn btn-secondary" style={{ textDecoration: "none" }}>
+              <span aria-hidden="true">←</span>
+              Voltar ao dashboard
+            </Link>
+          </div>
         </div>
-        <Link to="/dashboard">
-          <button
-            style={{
-              padding: "9px 16px",
-              border: "1px solid #6f42c1",
-              borderRadius: 8,
-              background: "#fff",
-              color: "#6f42c1",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            Voltar ao Dashboard
-          </button>
-        </Link>
-      </div>
+
+        <div className="history-summary-grid">
+          <div className="card" style={{ padding: 14 }}>
+            <div className="stat-label">Sessões</div>
+            <strong style={{ fontSize: 24 }}>{itens.length}</strong>
+          </div>
+          <div className="card" style={{ padding: 14 }}>
+            <div className="stat-label">Acertos</div>
+            <strong style={{ fontSize: 24, color: "#198754" }}>{resumo.acertos}</strong>
+          </div>
+          <div className="card" style={{ padding: 14 }}>
+            <div className="stat-label">Aproveit.</div>
+            <strong style={{ fontSize: 24, color: "#5c2e91" }}>{resumo.aproveitamento}%</strong>
+          </div>
+        </div>
+      </section>
 
       {loading ? (
-        <div style={S.notice}>Carregando histórico...</div>
+        <div className="notice">Carregando histórico...</div>
       ) : erro ? (
-        <div style={{ ...S.notice, borderColor: "#f5c2c7", background: "#f8d7da", color: "#842029" }}>
+        <div className="notice notice-error">
           <strong>Erro ao carregar histórico.</strong>
           <p style={{ margin: "6px 0 12px" }}>{erro}</p>
-          <button onClick={carregar} style={S.retryButton}>
+          <button onClick={carregar} className="btn-secondary">
             Tentar novamente
           </button>
         </div>
       ) : itens.length === 0 ? (
-        <div style={S.notice}>
+        <div className="notice">
           <strong>Nenhuma sessão registrada ainda.</strong>
           <p style={{ margin: "6px 0 0" }}>Resolva um exercício para começar a construir seu histórico.</p>
         </div>
       ) : (
-        <div style={{ position: "relative", paddingLeft: 22 }}>
-          <div style={S.timelineLine} />
+        <div className="timeline">
           {Object.entries(agrupadoPorData).map(([data, sessoes]) => (
-            <section key={data} style={{ marginBottom: 28 }}>
-              <h3 style={S.dateTitle}>{data}</h3>
+            <section key={data} className="timeline-day">
+              <span className="timeline-dot" />
+              <h3 className="timeline-date">{data}</h3>
+
               <div style={{ display: "grid", gap: 14 }}>
                 {sessoes.map((item) => (
-                  <article key={item.id} style={S.card}>
-                    <div
-                      style={{
-                        ...S.marker,
-                        background: item.acertou ? "#198754" : "#dc3545",
-                      }}
-                    >
-                      {item.acertou ? "✓" : "×"}
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 14 }}>
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <strong style={{ fontSize: 16 }}>{resumoExercicio(item.exercicio)}</strong>
-                          <span style={item.acertou ? S.successChip : S.errorChip}>
+                  <article key={item.id} className="card card-hover" style={{ padding: 18 }}>
+                    <div className="history-session-heading">
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <span className={`icon-badge ${item.acertou ? "chip-success" : "chip-error"}`} aria-hidden="true">
+                            {item.acertou ? "✓" : "×"}
+                          </span>
+                          <strong style={{ fontSize: 16, color: "#243042" }}>{resumoExercicio(item.exercicio)}</strong>
+                          <span className={`chip ${item.acertou ? "chip-success" : "chip-error"}`}>
                             {item.acertou ? "Acerto" : "Erro"}
                           </span>
                         </div>
-                        <p style={{ margin: "5px 0 0", color: "#6c757d", fontSize: 13 }}>{item.topico}</p>
+                        <p style={{ margin: "7px 0 0 44px", color: "#64748b", fontSize: 13 }}>{item.topico}</p>
                       </div>
-                      <span style={{ color: "#6c757d", fontSize: 13, whiteSpace: "nowrap" }}>
+                      <span style={{ color: "#64748b", fontSize: 13, whiteSpace: "nowrap", fontWeight: 700 }}>
                         {formatarHora(item.data)}
                       </span>
                     </div>
 
-                    <div style={S.metrics}>
-                      <span>
-                        Proficiência:{" "}
-                        <strong>
-                          {formatarPct(item.proficiencia_antes)} → {formatarPct(item.proficiencia_depois)}
-                        </strong>
-                      </span>
-                      <span>
-                        Tentativas: <strong>{item.tentativas}</strong>
-                      </span>
-                      <span>
-                        Usou dica: <strong>{item.usou_dica ? `Sim (${item.dicas_usadas})` : "Não"}</strong>
-                      </span>
+                    <div className="history-metrics">
+                      <Metric label="Proficiência" value={`${formatarPct(item.proficiencia_antes)} → ${formatarPct(item.proficiencia_depois)}`} />
+                      <Metric label="Tentativas" value={String(item.tentativas)} />
+                      <Metric label="Dicas" value={item.usou_dica ? `Sim (${item.dicas_usadas})` : "Não"} />
                     </div>
 
-                    <details style={{ marginTop: 12 }}>
-                      <summary style={{ cursor: "pointer", color: "#6f42c1", fontWeight: 700, fontSize: 13 }}>
+                    <details style={{ marginTop: 14 }}>
+                      <summary style={{ cursor: "pointer", color: "#5c2e91", fontWeight: 800, fontSize: 13 }}>
                         Ver enunciado completo
                       </summary>
                       <p style={S.enunciado}>{item.exercicio}</p>
@@ -186,91 +179,24 @@ export function Historico() {
           ))}
         </div>
       )}
+    </main>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ padding: "10px 12px", borderRadius: 12, background: "#f8fafc", border: "1px solid #edf1f5" }}>
+      <div style={{ color: "#64748b", fontSize: 11, fontWeight: 800, marginBottom: 4 }}>{label}</div>
+      <strong style={{ color: "#334155", fontSize: 13 }}>{value}</strong>
     </div>
   );
 }
 
 const S = {
-  notice: {
-    border: "1px solid #dee2e6",
-    borderRadius: 8,
-    padding: 20,
-    background: "#fff",
-    color: "#6c757d",
-  } as React.CSSProperties,
-  retryButton: {
-    padding: "8px 14px",
-    border: "1px solid #842029",
-    borderRadius: 6,
-    background: "transparent",
-    color: "#842029",
-    cursor: "pointer",
-    fontWeight: 600,
-  } as React.CSSProperties,
-  timelineLine: {
-    position: "absolute",
-    left: 6,
-    top: 8,
-    bottom: 0,
-    width: 2,
-    background: "#dee2e6",
-  } as React.CSSProperties,
-  dateTitle: {
-    margin: "0 0 12px",
-    color: "#343a40",
-    fontSize: 15,
-    fontWeight: 800,
-  } as React.CSSProperties,
-  card: {
-    position: "relative",
-    border: "1px solid #dee2e6",
-    borderRadius: 8,
-    padding: 18,
-    background: "#fff",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
-  } as React.CSSProperties,
-  marker: {
-    position: "absolute",
-    left: -27,
-    top: 18,
-    width: 24,
-    height: 24,
-    borderRadius: "50%",
-    color: "#fff",
-    display: "grid",
-    placeItems: "center",
-    fontWeight: 900,
-    border: "3px solid #fff",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-  } as React.CSSProperties,
-  successChip: {
-    borderRadius: 999,
-    padding: "3px 9px",
-    background: "#d1fae5",
-    color: "#065f46",
-    fontSize: 12,
-    fontWeight: 800,
-  } as React.CSSProperties,
-  errorChip: {
-    borderRadius: 999,
-    padding: "3px 9px",
-    background: "#fee2e2",
-    color: "#991b1b",
-    fontSize: 12,
-    fontWeight: 800,
-  } as React.CSSProperties,
-  metrics: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px 18px",
-    marginTop: 14,
-    color: "#495057",
-    fontSize: 13,
-  } as React.CSSProperties,
   enunciado: {
     margin: "10px 0 0",
     whiteSpace: "pre-wrap",
-    color: "#495057",
+    color: "#475569",
     lineHeight: 1.6,
     fontSize: 13,
   } as React.CSSProperties,

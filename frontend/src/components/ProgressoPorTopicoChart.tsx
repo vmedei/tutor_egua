@@ -17,7 +17,7 @@ interface Props {
 
 function corPorPercentual(pct: number) {
   if (pct >= 70) return "#198754";
-  if (pct >= 30) return "#fd7e14";
+  if (pct >= 30) return "#d97706";
   return "#dc3545";
 }
 
@@ -33,11 +33,12 @@ export function ProgressoPorTopicoChart({ dados }: Props) {
     return (
       <div
         style={{
-          border: "1px dashed #ced4da",
-          borderRadius: 8,
+          border: "1px dashed #cbd5e1",
+          borderRadius: 14,
           padding: 24,
-          color: "#6c757d",
+          color: "#64748b",
           textAlign: "center",
+          background: "#fff",
         }}
       >
         Nenhum progresso registrado ainda.
@@ -47,12 +48,10 @@ export function ProgressoPorTopicoChart({ dados }: Props) {
 
   return (
     <div
+      className="card"
       style={{
         height: Math.max(360, chartData.length * 54),
-        border: "1px solid #dee2e6",
-        borderRadius: 8,
-        padding: "18px 18px 8px",
-        background: "#fff",
+        padding: "20px 18px 10px",
       }}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -67,7 +66,7 @@ export function ProgressoPorTopicoChart({ dados }: Props) {
             type="number"
             domain={[0, 100]}
             tickFormatter={(value) => `${value}%`}
-            tick={{ fill: "#6c757d", fontSize: 12 }}
+            tick={{ fill: "#64748b", fontSize: 12 }}
             axisLine={false}
             tickLine={false}
           />
@@ -75,7 +74,7 @@ export function ProgressoPorTopicoChart({ dados }: Props) {
             type="category"
             dataKey="nome"
             width={150}
-            tick={{ fill: "#343a40", fontSize: 13, fontWeight: 600 }}
+            tick={{ fill: "#334155", fontSize: 13, fontWeight: 700 }}
             axisLine={false}
             tickLine={false}
           />
@@ -85,14 +84,14 @@ export function ProgressoPorTopicoChart({ dados }: Props) {
               const payload = item.payload as { acertos: number; tentativas: number };
               return [`${value}% (${payload.acertos}/${payload.tentativas} acertos)`, "Proficiência"];
             }}
-            labelStyle={{ color: "#343a40", fontWeight: 700 }}
+            labelStyle={{ color: "#334155", fontWeight: 800 }}
             contentStyle={{
-              border: "1px solid #dee2e6",
-              borderRadius: 8,
-              boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+              border: "1px solid #dfe4ea",
+              borderRadius: 12,
+              boxShadow: "0 8px 20px rgba(15, 23, 42, 0.12)",
             }}
           />
-          <Bar dataKey="pct" radius={[0, 6, 6, 0]} barSize={26}>
+          <Bar dataKey="pct" radius={[0, 8, 8, 0]} barSize={26}>
             {chartData.map((item) => (
               <Cell key={item.nome} fill={corPorPercentual(item.pct)} />
             ))}
@@ -100,7 +99,7 @@ export function ProgressoPorTopicoChart({ dados }: Props) {
               dataKey="pct"
               position="right"
               formatter={(value) => `${value ?? 0}%`}
-              style={{ fill: "#343a40", fontSize: 13, fontWeight: 700 }}
+              style={{ fill: "#334155", fontSize: 13, fontWeight: 800 }}
             />
           </Bar>
         </BarChart>

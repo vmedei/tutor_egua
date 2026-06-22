@@ -21,34 +21,75 @@ export function Login() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "80px auto", padding: 24 }}>
-      <h1>TutorÉgua</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 12 }}>
-          <label>E-mail</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ display: "block", width: "100%", marginTop: 4 }}
-          />
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        padding: 20,
+      }}
+    >
+      <div className="card" style={{ width: "100%", maxWidth: 430, padding: 28, boxShadow: "var(--shadow-md)" }}>
+        <div
+          aria-hidden="true"
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 16,
+            display: "grid",
+            placeItems: "center",
+            background: "#f1ebfb",
+            color: "#5c2e91",
+            fontWeight: 900,
+            marginBottom: 16,
+          }}
+        >
+          T
         </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>Senha</label>
-          <input
-            type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            required
-            style={{ display: "block", width: "100%", marginTop: 4 }}
-          />
-        </div>
-        {erro && <p style={{ color: "red" }}>{erro}</p>}
-        <button type="submit" style={{ width: "100%", padding: 10 }}>
-          Entrar
-        </button>
-      </form>
-    </div>
+
+        <h1 className="page-title" style={{ fontSize: 32 }}>
+          TutorÉgua
+        </h1>
+        <p className="page-subtitle" style={{ marginBottom: 24 }}>
+          Entre para continuar seus exercícios e acompanhar seu progresso na linguagem Égua.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-field">
+            <label>E-mail</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="input"
+              placeholder="seu.email@exemplo.com"
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Senha</label>
+            <input
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              required
+              className="input"
+              placeholder="Digite sua senha"
+            />
+          </div>
+
+          {erro && (
+            <p className="notice notice-error" style={{ padding: 12, margin: "0 0 14px", fontSize: 14 }}>
+              {erro}
+            </p>
+          )}
+
+          <button type="submit" className="btn-primary" style={{ width: "100%" }}>
+            Entrar
+          </button>
+        </form>
+      </div>
+    </main>
   );
 }

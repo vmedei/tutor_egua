@@ -95,6 +95,7 @@ async def submeter_resposta(
         correto=resultado.correto,
         dicas_usadas=payload.dicas_usadas,
     )
+    
     sessao.delta_proficiencia = delta
     sessao.proficiencia_antes = proficiencia_antes
     sessao.proficiencia_depois = proficiencia_depois

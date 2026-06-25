@@ -112,6 +112,14 @@ export function Exercicio() {
       .finally(() => setCarregando(false));
   };
 
+  const tentarNovamente = () => {
+    setCodigo("");
+    setResposta("");
+    setExecucao(null);
+    setSubmissao(null);
+    setDicasUsadas(0);
+  };
+
   useEffect(() => {
     if (!alunoId) {
       setErro("Sessão inválida. Faça login novamente.");
@@ -424,9 +432,16 @@ export function Exercicio() {
                 <strong>Dica da IA:</strong> {submissao.feedback}
               </p>
             )}
-            <button onClick={carregarProximo} className="btn-success">
-              Próxima questão →
-            </button>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {!submissao.correto && (
+                <button onClick={tentarNovamente} className="btn-primary">
+                  ↩ Tentar novamente
+                </button>
+              )}
+              <button onClick={carregarProximo} className={submissao.correto ? "btn-success" : "btn-muted"}>
+                Próxima questão →
+              </button>
+            </div>
           </section>
         )}
       </div>

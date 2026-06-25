@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Exercicio, ProgressoAluno, Topico
+from app.models import Exercicio, ProgressoAluno, Sessao, Topico
 from app.schemas.exercicio import ExercicioResponse
 from app.schemas.progresso import ProgressoGlobalResponse, ProgressoResponse, TopicoProgressoItem
 from app.services.seletor import selecionar_exercicio
@@ -22,6 +22,35 @@ async def proximo_exercicio(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_
         return resp
 
     raise HTTPException(status_code=404, detail="Todos os exercícios foram concluídos!")
+
+
+@router.get("/exercicio-por-topico/{aluno_id}/{topico_codigo}", response_model=ExercicioResponse)
+async def exercicio_por_topico(
+    aluno_id: uuid.UUID,
+    topico_codigo: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Retorna o próximo exercício não tentado de um tópico específico."""
+    topico = await db.scalar(select(Topico).where(Topico.codigo == topico_codigo))
+    if not topico:
+        raise HTTPException(status_code=404, detail="Tópico não encontrado")
+
+    tentados = select(Sessao.exercicio_id).where(Sessao.aluno_id == aluno_id)
+    exercicio = await db.scalar(
+        select(Exercicio)
+        .where(
+            Exercicio.topico_id == topico.id,
+            Exercicio.id.not_in(tentados),
+        )
+        .order_by(Exercicio.nivel_bloom.asc(), Exercicio.id.asc())
+    )
+
+    if not exercicio:
+        raise HTTPException(status_code=404, detail="Todos os exercícios deste tópico foram concluídos")
+
+    resp = ExercicioResponse.model_validate(exercicio)
+    resp.topico_nome = topico.nome
+    return resp
 
 
 @router.get("/progresso/{aluno_id}", response_model=list[ProgressoResponse])

@@ -3,12 +3,14 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from jose import jwt
 from passlib.context import CryptContext
-from sqlalchemy import select
+import uuid
+
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
-from app.models import Aluno
+from app.models import Aluno, FeedbackIA, ProgressoAluno, Sessao
 from app.schemas.aluno import AlunoCreate, AlunoLogin, AlunoResponse, TokenResponse
 
 router = APIRouter()
@@ -58,3 +60,23 @@ async def buscar_aluno(aluno_id: str, db: AsyncSession = Depends(get_db)):
     if not aluno:
         raise HTTPException(status_code=404, detail="Aluno não encontrado")
     return aluno
+
+
+@router.post("/{aluno_id}/resetar", status_code=200)
+async def resetar_progresso(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Apaga todo o progresso, sessões e feedbacks do aluno, zerando o histórico."""
+    aluno = await db.get(Aluno, aluno_id)
+    if not aluno:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+
+    # 1. FeedbackIA (FK → Sessao) deve ser deletado antes das sessões
+    sessoes_ids = select(Sessao.id).where(Sessao.aluno_id == aluno_id)
+    await db.execute(delete(FeedbackIA).where(FeedbackIA.sessao_id.in_(sessoes_ids)))
+
+    # 2. Sessões
+    await db.execute(delete(Sessao).where(Sessao.aluno_id == aluno_id))
+
+    # 3. Progresso por tópico
+    await db.execute(delete(ProgressoAluno).where(ProgressoAluno.aluno_id == aluno_id))
+
+    return {"ok": True, "mensagem": "Progresso resetado com sucesso."}

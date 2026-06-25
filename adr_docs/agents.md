@@ -58,6 +58,8 @@ Um ADR não precisa ser longo. Dois parágrafos bem escritos valem mais do que u
 | Arquivo | Assunto |
 |---|---|
 | `agents.md` | Este documento — explica a pasta e a prática de ADR |
+| `001-navbar-progresso-global.md` | Decisão de adicionar navbar e progresso global persistente |
+| `002-fundamentacao-teorica.md` | Teorias pedagógicas (ZDP, Mastery Learning, Ebbinghaus, Bloom, ACT-R) e mapeamento para o código |
 
 > Adicione uma linha a esta tabela cada vez que criar um novo ADR.
 

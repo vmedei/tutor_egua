@@ -6,6 +6,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Exercicio } from "./pages/Exercicio";
 import { Historico } from "./pages/Historico";
 import { Login } from "./pages/Login";
+import { Tutor } from "./pages/Tutor";
 
 function ProtectedLayout() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedLayout />}>
+          <Route path="/tutor" element={<Tutor />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/exercicio" element={<Exercicio />} />
           <Route path="/historico" element={<Historico />} />

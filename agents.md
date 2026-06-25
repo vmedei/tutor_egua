@@ -1,6 +1,26 @@
-# agent.md — Contexto do TutorÉgua para implementação do Chatbot
+# agent.md — Contexto do TutorÉgua
 
-Este documento reúne todo o contexto necessário para implementar o chatbot de apoio à aprendizagem da linguagem Égua dentro do TutorÉgua. Leia-o inteiramente antes de escrever qualquer código.
+Este documento reúne todo o contexto necessário para implementar funcionalidades no TutorÉgua. Leia-o inteiramente antes de escrever qualquer código.
+
+> **Fundamentação teórica completa:** [`adr_docs/002-fundamentacao-teorica.md`](adr_docs/002-fundamentacao-teorica.md)  
+> Leia o ADR antes de alterar qualquer lógica de progressão, seleção de exercícios, feedback ou interface do grafo.
+
+---
+
+## 0. Restrições pedagógicas obrigatórias
+
+Estas regras derivam das teorias de ITS documentadas no ADR 002. Violá-las quebra a coerência pedagógica do sistema.
+
+| Regra | Teoria | Onde no código |
+|---|---|---|
+| Limiar de desbloqueio do próximo nó = **70%** | Mastery Learning (Bloom) | `LIMIAR_DESBLOQUEIO = 0.70` em `modelo_aluno.py` |
+| Exercícios ordenados do mais simples ao mais complexo dentro do tópico | Taxonomia de Bloom | `ORDER BY nivel_bloom ASC` no seletor |
+| O chat explica o tópico **antes** de apresentar o exercício | ZDP (Vygotsky) | Sequência obrigatória no `ChatPanel` |
+| Feedback sempre explicativo quando o aluno erra, nunca só "errado" | ACT-R (Anderson) | `ia_feedback.py` + campo `detalhe` na resposta |
+| Dicas são progressivas; o chat nunca entrega a solução direta | ZDP (Vygotsky) | System prompt do chat |
+| Nós sem pré-requisito cumprido são soft-locked (visual), não hard-locked | Mastery Learning | `GrafoProgresso.tsx` + lógica de `prerequisito` |
+| `proxima_revisao` e `DECAIMENTO_SEMANAL` não devem ser removidos | Ebbinghaus / Spaced Repetition | `modelo_aluno.py` |
+| Remediação: se proficiência ≤ 35% e ≥ 2 erros, voltar ao pré-requisito | ZDP (Vygotsky) | `seletor.py` — `LIMIAR_REMEDIACAO`, `LIMIAR_ERROS_REPETIDOS` |
 
 ---
 

@@ -4,6 +4,9 @@ import type { TopicoProgresso } from "../hooks/useProgresso";
 interface Props {
   porTopico: TopicoProgresso[];
   compacto?: boolean;
+  embedded?: boolean;
+  onNodeClick?: (codigo: string, nome: string) => void;
+  topicoSelecionado?: string | null;
 }
 
 type StatusProgresso = "iniciante" | "em progresso" | "dominado";
@@ -14,6 +17,7 @@ interface NodeExibido {
   pct: number;
   status: StatusProgresso;
   position: { x: number; y: number };
+  disponivel: boolean;
 }
 
 const NODE_WIDTH = 210;
@@ -23,6 +27,7 @@ const ROW_GAP = 34;
 const CONTENT_PADDING = 28;
 const HEADER_HEIGHT = 80;
 const STAGE_HEIGHT = 360;
+const LIMIAR_DESBLOQUEIO = 70;
 
 function normalizarPct(proficiencia: number) {
   return Math.round(Math.max(0, Math.min(1, proficiencia)) * 100);
@@ -66,6 +71,10 @@ function buildNodes(porTopico: TopicoProgresso[]): NodeExibido[] {
     const x = CONTENT_PADDING + coluna * (NODE_WIDTH + COLUMN_GAP);
     const y = HEADER_HEIGHT + CONTENT_PADDING + linha * (NODE_HEIGHT + ROW_GAP);
     const pct = item.pct ?? normalizarPct(item.proficiencia);
+    const pctAnterior = index > 0
+      ? (porTopico[index - 1]?.pct ?? normalizarPct(porTopico[index - 1]?.proficiencia ?? 0))
+      : LIMIAR_DESBLOQUEIO;
+    const disponivel = index === 0 || pctAnterior >= LIMIAR_DESBLOQUEIO;
 
     return {
       id: item.topico_codigo,
@@ -73,6 +82,7 @@ function buildNodes(porTopico: TopicoProgresso[]): NodeExibido[] {
       pct,
       status: statusFromPct(pct),
       position: { x, y },
+      disponivel,
     };
   });
 }
@@ -95,13 +105,18 @@ function buildPath(source: NodeExibido, target: NodeExibido) {
   return `M ${start.x} ${start.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${end.x} ${end.y}`;
 }
 
-export function GrafoProgresso({ porTopico, compacto = false }: Props) {
+export function GrafoProgresso({ porTopico, compacto = false, embedded = false, onNodeClick, topicoSelecionado }: Props) {
   const nodes = useMemo(() => buildNodes(porTopico), [porTopico]);
   const stageWidth = useMemo(() => {
     const maxX = nodes.reduce((max, node) => Math.max(max, node.position.x + NODE_WIDTH), 0);
     return Math.max(900, maxX + CONTENT_PADDING);
   }, [nodes]);
-  const stageHeight = compacto ? 300 : STAGE_HEIGHT;
+  const stageHeight = useMemo(() => {
+    if (compacto) return 300;
+    if (nodes.length === 0) return STAGE_HEIGHT;
+    const maxY = nodes.reduce((max, node) => Math.max(max, node.position.y), 0);
+    return maxY + NODE_HEIGHT + CONTENT_PADDING;
+  }, [nodes, compacto]);
 
   const paths = useMemo(() => {
     return nodes
@@ -118,7 +133,13 @@ export function GrafoProgresso({ porTopico, compacto = false }: Props) {
   }, [nodes]);
 
   return (
-    <div className="card graph-card" style={{ minHeight: compacto ? undefined : 720 }}>
+    <div
+      className="card graph-card"
+      style={embedded
+        ? { minHeight: 0, flex: 1, display: "flex", flexDirection: "column" }
+        : { minHeight: compacto ? undefined : 720 }
+      }
+    >
       <div
         style={{
           display: "flex",
@@ -147,14 +168,21 @@ export function GrafoProgresso({ porTopico, compacto = false }: Props) {
         </div>
       </div>
 
+      {/* Grafo visual (apenas modo não-compacto) */}
       {!compacto && (
-        <div className="graph-stage" style={{ height: stageHeight }}>
+        <div
+          className="graph-stage"
+          style={{
+            height: stageHeight,
+            ...(embedded ? { flexShrink: 0, overflowY: "auto" } : {}),
+          }}
+        >
           <svg
             width={stageWidth}
             height={stageHeight}
             viewBox={`0 0 ${stageWidth} ${stageHeight}`}
-            preserveAspectRatio="none"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+            preserveAspectRatio="xMinYMin meet"
+            style={{ position: "absolute", top: 0, left: 0, width: stageWidth, height: stageHeight, minWidth: "100%" }}
           >
             {paths.map((path) => (
               <path
@@ -168,86 +196,117 @@ export function GrafoProgresso({ porTopico, compacto = false }: Props) {
             ))}
           </svg>
 
-          {nodes.map((node) => (
-            <div
-              key={node.id}
-              style={{
-                position: "absolute",
-                left: node.position.x,
-                top: node.position.y,
-                width: NODE_WIDTH,
-                height: NODE_HEIGHT,
-                borderRadius: 14,
-                background: "#fff",
-                border: "1px solid #e7e0f2",
-                boxShadow: "0 8px 20px rgba(67, 32, 111, 0.08)",
-                padding: "14px 14px 12px",
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                gap: 5,
-              }}
-            >
-              <div style={{ fontSize: 15, fontWeight: 800, color: "#243042", lineHeight: 1.2 }}>
-                {node.nome}
-              </div>
-              <div style={{ fontSize: 13, color: "#475569", fontWeight: 800 }}>{node.pct}%</div>
+          {nodes.map((node) => {
+            const isSelecionado = topicoSelecionado === node.id;
+            return (
               <div
+                key={node.id}
+                onClick={() => onNodeClick?.(node.id, node.nome)}
+                title={!node.disponivel ? "Complete o tópico anterior para desbloquear (70%)" : node.nome}
                 style={{
-                  height: 7,
-                  borderRadius: 999,
-                  background: "#ede7f7",
-                  overflow: "hidden",
-                  marginTop: 2,
+                  position: "absolute",
+                  left: node.position.x,
+                  top: node.position.y,
+                  width: NODE_WIDTH,
+                  height: NODE_HEIGHT,
+                  borderRadius: 14,
+                  background: node.disponivel ? "#fff" : "#f1f5f9",
+                  border: isSelecionado
+                    ? "2px solid #6f42c1"
+                    : node.disponivel
+                    ? "1px solid #e7e0f2"
+                    : "1px solid #cbd5e1",
+                  boxShadow: isSelecionado
+                    ? "0 0 0 3px rgba(111, 66, 193, 0.18), 0 8px 20px rgba(67, 32, 111, 0.12)"
+                    : "0 8px 20px rgba(67, 32, 111, 0.08)",
+                  padding: "14px 14px 12px",
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  gap: 5,
+                  cursor: onNodeClick ? "pointer" : "default",
+                  opacity: node.disponivel ? 1 : 0.55,
+                  transition: "all 150ms ease",
+                  userSelect: "none",
                 }}
               >
+                {!node.disponivel && (
+                  <div style={{ fontSize: 13, marginBottom: 2 }}>🔒</div>
+                )}
+                <div style={{ fontSize: 15, fontWeight: 800, color: node.disponivel ? "#243042" : "#64748b", lineHeight: 1.2 }}>
+                  {node.nome}
+                </div>
+                <div style={{ fontSize: 13, color: node.disponivel ? "#475569" : "#94a3b8", fontWeight: 800 }}>
+                  {node.pct}%
+                </div>
+                <div style={{ height: 7, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 2 }}>
+                  <div
+                    style={{
+                      width: `${node.pct}%`,
+                      height: "100%",
+                      borderRadius: 999,
+                      background: node.disponivel ? statusColor(node.status) : "#cbd5e1",
+                      transition: "width 180ms ease",
+                    }}
+                  />
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: node.disponivel ? "#64748b" : "#94a3b8" }}>
+                  {node.disponivel ? statusLabel(node.status) : "Bloqueado"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Lista de nós (visível em modo compacto e em telas pequenas) */}
+      <div
+        className={compacto ? "graph-list graph-list-scroll" : "graph-mobile-list"}
+        style={embedded && compacto ? { maxHeight: "none", flex: 1, overflowY: "auto" } : undefined}
+      >
+        {nodes.map((node) => {
+          const isSelecionado = topicoSelecionado === node.id;
+          return (
+            <div
+              key={node.id}
+              onClick={() => onNodeClick?.(node.id, node.nome)}
+              title={!node.disponivel ? "Complete o tópico anterior para desbloquear (70%)" : node.nome}
+              style={{
+                border: isSelecionado ? "2px solid #6f42c1" : node.disponivel ? "1px solid #e7e0f2" : "1px solid #cbd5e1",
+                borderRadius: 14,
+                padding: 12,
+                background: node.disponivel ? "#fff" : "#f8fafc",
+                opacity: node.disponivel ? 1 : 0.65,
+                cursor: onNodeClick ? "pointer" : "default",
+                userSelect: "none",
+                transition: "all 150ms ease",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+                <strong style={{ color: node.disponivel ? "#243042" : "#64748b", fontSize: 14 }}>
+                  {!node.disponivel && "🔒 "}{node.nome}
+                </strong>
+                <span style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>
+                  {node.disponivel ? statusLabel(node.status) : "Bloqueado"}
+                </span>
+              </div>
+              <div style={{ height: 8, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 10 }}>
                 <div
                   style={{
                     width: `${node.pct}%`,
                     height: "100%",
                     borderRadius: 999,
-                    background: statusColor(node.status),
-                    transition: "width 180ms ease",
+                    background: node.disponivel ? statusColor(node.status) : "#cbd5e1",
                   }}
                 />
               </div>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>
-                {statusLabel(node.status)}
+              <div style={{ marginTop: 6, color: node.disponivel ? "#475569" : "#94a3b8", fontSize: 12, fontWeight: 800 }}>
+                {node.pct}%
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      <div className={compacto ? "graph-list graph-list-scroll" : "graph-mobile-list"}>
-        {nodes.map((node) => (
-          <div
-            key={node.id}
-            style={{
-              border: "1px solid #e7e0f2",
-              borderRadius: 14,
-              padding: 12,
-              background: "#fff",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
-              <strong style={{ color: "#243042", fontSize: 14 }}>{node.nome}</strong>
-              <span style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>{statusLabel(node.status)}</span>
-            </div>
-            <div style={{ height: 8, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 10 }}>
-              <div
-                style={{
-                  width: `${node.pct}%`,
-                  height: "100%",
-                  borderRadius: 999,
-                  background: statusColor(node.status),
-                }}
-              />
-            </div>
-            <div style={{ marginTop: 6, color: "#475569", fontSize: 12, fontWeight: 800 }}>{node.pct}%</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

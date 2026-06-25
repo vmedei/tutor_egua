@@ -1,7 +1,9 @@
+import type { CSSProperties } from "react";
 import type { TopicoProgresso } from "../hooks/useProgresso";
 
 interface Props {
   topico: TopicoProgresso | null;
+  style?: CSSProperties;
 }
 
 const LIMIAR_DOMINADO = 70;
@@ -13,7 +15,7 @@ function statusLabel(pct: number) {
   return { label: "Iniciante", color: "#1e40af", bg: "#dbeafe" };
 }
 
-export function ProgressoTopico({ topico }: Props) {
+export function ProgressoTopico({ topico, style }: Props) {
   if (!topico) {
     return (
       <div style={{
@@ -24,8 +26,9 @@ export function ProgressoTopico({ topico }: Props) {
         color: "#94a3b8",
         fontSize: 14,
         background: "#f8fafc",
+        ...style,
       }}>
-        Clique em um nó do grafo para começar a estudar
+        Clique em um tópico no grafo para ver o progresso
       </div>
     );
   }
@@ -42,6 +45,7 @@ export function ProgressoTopico({ topico }: Props) {
       padding: "20px 24px",
       background: "linear-gradient(180deg, #f7fcfd 0%, #ffffff 100%)",
       boxShadow: "0 4px 12px rgba(20, 35, 40, 0.06)",
+      ...style,
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <div>

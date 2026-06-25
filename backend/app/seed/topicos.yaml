@@ -46,7 +46,7 @@ topicos:
     descricao: "[], acesso por índice, tamanho()"
     nivel: 3
     ordem: 7
-    prerequisitos: [lacos]
+    prerequisitos: [lacos, funcoes]
 
   - codigo: classes
     nome: "Classes e Objetos"

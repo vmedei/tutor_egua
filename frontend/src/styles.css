@@ -545,7 +545,6 @@ button:disabled {
 }
 
 .graph-card {
-  min-height: 450px;
   overflow: hidden;
 }
 
@@ -624,6 +623,71 @@ pre {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ── Layout protegido (Navbar + conteúdo) ───────────────────────────── */
+
+.protected-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.protected-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ── Página Tutor — 3 cards ─────────────────────────────────────────── */
+
+.tutor-page {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--surface-soft);
+}
+
+.tutor-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tutor-card {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tutor-card .card,
+.tutor-card.card {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 900px) {
+  .tutor-page {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow-y: visible;
+    min-height: 100%;
+  }
+
+  .tutor-card {
+    min-height: 360px;
   }
 }
 

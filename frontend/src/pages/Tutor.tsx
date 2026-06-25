@@ -11,49 +11,43 @@ export function Tutor() {
   const topicoAtual = porTopico.find((t) => t.topico_codigo === topicoSelecionado?.codigo) ?? null;
 
   return (
-    <div style={{
-      display: "flex",
-      height: "calc(100vh - 82px)",
-      overflow: "hidden",
-      background: "#f8fafc",
-    }}>
-      {/* Painel esquerdo — Chat */}
-      <div style={{
-        width: "50%",
-        flexShrink: 0,
-        borderRight: "1px solid #dee2e6",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        background: "#fff",
-      }}>
+    <div className="tutor-page">
+      {/* Card esquerdo — Chat */}
+      <div className="card" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <ChatPanel topicoSelecionado={topicoSelecionado} />
       </div>
 
-      {/* Painel direito — Grafo + Progresso */}
-      <div style={{
-        width: "50%",
-        flexShrink: 0,
-        overflowY: "auto",
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-      }}>
-        {loading ? (
-          <p style={{ color: "#94a3b8", fontSize: 14, textAlign: "center", paddingTop: 40 }}>
-            Carregando grafo...
-          </p>
-        ) : (
-          <>
+      {/* Coluna direita */}
+      <div className="tutor-right">
+        {/* Card superior — Grafo de tópicos clicável */}
+        <div className="tutor-card">
+          {loading ? (
+            <div className="card" style={{
+              flex: 1,
+              display: "grid",
+              placeItems: "center",
+              color: "#94a3b8",
+              fontSize: 14,
+            }}>
+              Carregando tópicos…
+            </div>
+          ) : (
             <GrafoProgresso
               porTopico={porTopico}
+              embedded
               onNodeClick={(codigo, nome) => setTopicoSelecionado({ codigo, nome })}
               topicoSelecionado={topicoSelecionado?.codigo ?? null}
             />
-            <ProgressoTopico topico={topicoAtual} />
-          </>
-        )}
+          )}
+        </div>
+
+        {/* Card inferior — Progresso do tópico selecionado */}
+        <div className="tutor-card" style={{ overflow: "auto" }}>
+          <ProgressoTopico
+            topico={topicoAtual}
+            style={{ height: "100%", boxSizing: "border-box" }}
+          />
+        </div>
       </div>
     </div>
   );

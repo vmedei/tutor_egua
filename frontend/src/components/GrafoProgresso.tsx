@@ -23,10 +23,10 @@ interface NodeExibido {
 const NODE_WIDTH = 210;
 const NODE_HEIGHT = 92;
 const COLUMN_GAP = 46;
-const ROW_GAP = 34;
+const ROW_GAP = 40;
 const CONTENT_PADDING = 28;
 const HEADER_HEIGHT = 80;
-const STAGE_HEIGHT = 360;
+const COLS_PER_ROW = 4;
 const LIMIAR_DESBLOQUEIO = 70;
 
 function normalizarPct(proficiencia: number) {
@@ -61,20 +61,21 @@ function legendItem(color: string, label: string) {
 }
 
 function buildNodes(porTopico: TopicoProgresso[]): NodeExibido[] {
-  const itensOrdenados = [...porTopico].map((item, index) => ({ item, index }));
-  const total = itensOrdenados.length;
-  const colunas = Math.max(1, Math.min(4, total));
+  const pctByCode = new Map(
+    porTopico.map((t) => [t.topico_codigo, t.pct ?? normalizarPct(t.proficiencia)])
+  );
 
-  return itensOrdenados.map(({ item, index }) => {
-    const coluna = index % colunas;
-    const linha = Math.floor(index / colunas);
+  return porTopico.map((item, index) => {
+    const coluna = index % COLS_PER_ROW;
+    const linha = Math.floor(index / COLS_PER_ROW);
     const x = CONTENT_PADDING + coluna * (NODE_WIDTH + COLUMN_GAP);
     const y = HEADER_HEIGHT + CONTENT_PADDING + linha * (NODE_HEIGHT + ROW_GAP);
     const pct = item.pct ?? normalizarPct(item.proficiencia);
-    const pctAnterior = index > 0
-      ? (porTopico[index - 1]?.pct ?? normalizarPct(porTopico[index - 1]?.proficiencia ?? 0))
-      : LIMIAR_DESBLOQUEIO;
-    const disponivel = index === 0 || pctAnterior >= LIMIAR_DESBLOQUEIO;
+
+    // Disponível apenas quando TODOS os pré-requisitos atingiram o limiar
+    const disponivel =
+      item.prerequisitos.length === 0 ||
+      item.prerequisitos.every((prereqCodigo) => (pctByCode.get(prereqCodigo) ?? 0) >= LIMIAR_DESBLOQUEIO);
 
     return {
       id: item.topico_codigo,
@@ -94,43 +95,70 @@ function getNodeCenter(node: NodeExibido) {
   };
 }
 
-function buildPath(source: NodeExibido, target: NodeExibido) {
-  const start = getNodeCenter(source);
-  const end = getNodeCenter(target);
-  const dx = Math.max(90, (end.x - start.x) * 0.45);
-  const c1x = start.x + dx;
-  const c1y = start.y;
-  const c2x = end.x - dx;
-  const c2y = end.y;
-  return `M ${start.x} ${start.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${end.x} ${end.y}`;
+/**
+ * Caminho bezier entre dois nós. Para arestas na mesma linha: S-curva horizontal.
+ * Para arestas entre linhas diferentes (wrappping do grid): arco que desce e sobe.
+ */
+function buildPath(source: NodeExibido, target: NodeExibido): string {
+  const s = getNodeCenter(source);
+  const e = getNodeCenter(target);
+
+  const dy = e.y - s.y;
+
+  if (Math.abs(dy) < NODE_HEIGHT * 0.6) {
+    // Mesma linha — S-curva horizontal
+    const forward = e.x >= s.x;
+    const cx = Math.max(80, Math.abs(e.x - s.x) * 0.45);
+    const dir = forward ? 1 : -1;
+    return `M ${s.x} ${s.y} C ${s.x + cx * dir} ${s.y}, ${e.x - cx * dir} ${e.y}, ${e.x} ${e.y}`;
+  }
+
+  // Linhas diferentes — arco que desce verticalmente com inclinação suave
+  const c1x = s.x + (e.x - s.x) * 0.15;
+  const c1y = s.y + dy * 0.65;
+  const c2x = e.x - (e.x - s.x) * 0.15;
+  const c2y = e.y - dy * 0.35;
+  return `M ${s.x} ${s.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${e.x} ${e.y}`;
 }
 
 export function GrafoProgresso({ porTopico, compacto = false, embedded = false, onNodeClick, topicoSelecionado }: Props) {
   const nodes = useMemo(() => buildNodes(porTopico), [porTopico]);
+
   const stageWidth = useMemo(() => {
     const maxX = nodes.reduce((max, node) => Math.max(max, node.position.x + NODE_WIDTH), 0);
     return Math.max(900, maxX + CONTENT_PADDING);
   }, [nodes]);
+
   const stageHeight = useMemo(() => {
     if (compacto) return 300;
-    if (nodes.length === 0) return STAGE_HEIGHT;
+    if (nodes.length === 0) return 360;
     const maxY = nodes.reduce((max, node) => Math.max(max, node.position.y), 0);
     return maxY + NODE_HEIGHT + CONTENT_PADDING;
   }, [nodes, compacto]);
 
+  // Mapa código → node para lookup eficiente nas arestas
+  const nodeByCode = useMemo(
+    () => new Map(nodes.map((n) => [n.id, n])),
+    [nodes]
+  );
+
+  // Arestas reais do DAG: para cada nó, uma aresta por pré-requisito
   const paths = useMemo(() => {
-    return nodes
-      .slice(0, -1)
-      .map((source, index) => {
-        const target = nodes[index + 1];
-        if (!source || !target) return null;
-        return {
-          key: `${source.id}-${target.id}`,
+    const result: { key: string; d: string }[] = [];
+    for (const item of porTopico) {
+      const target = nodeByCode.get(item.topico_codigo);
+      if (!target) continue;
+      for (const prereqCodigo of item.prerequisitos) {
+        const source = nodeByCode.get(prereqCodigo);
+        if (!source) continue;
+        result.push({
+          key: `${prereqCodigo}→${item.topico_codigo}`,
           d: buildPath(source, target),
-        };
-      })
-      .filter((path): path is { key: string; d: string } => path !== null);
-  }, [nodes]);
+        });
+      }
+    }
+    return result;
+  }, [porTopico, nodeByCode]);
 
   return (
     <div
@@ -140,6 +168,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
         : { minHeight: compacto ? undefined : 720 }
       }
     >
+      {/* Cabeçalho */}
       <div
         style={{
           display: "flex",
@@ -148,12 +177,13 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
           gap: 16,
           padding: "20px 20px 10px",
           flexWrap: "wrap",
+          flexShrink: 0,
         }}
       >
         <div>
           <strong style={{ fontSize: 18, color: "#243042" }}>Mapa de progresso</strong>
           <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
-            Os mesmos dados do progresso por tópico, organizados como grafo de pré-requisitos.
+            Grafo de pré-requisitos — clique em um nó para estudar
           </div>
         </div>
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
@@ -168,7 +198,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
         </div>
       </div>
 
-      {/* Grafo visual (apenas modo não-compacto) */}
+      {/* Grafo visual (modo não-compacto) */}
       {!compacto && (
         <div
           className="graph-stage"
@@ -181,17 +211,29 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
             width={stageWidth}
             height={stageHeight}
             viewBox={`0 0 ${stageWidth} ${stageHeight}`}
-            preserveAspectRatio="xMinYMin meet"
             style={{ position: "absolute", top: 0, left: 0, width: stageWidth, height: stageHeight, minWidth: "100%" }}
           >
+            <defs>
+              <marker
+                id="arrowhead"
+                markerWidth="8"
+                markerHeight="6"
+                refX="7"
+                refY="3"
+                orient="auto"
+              >
+                <polygon points="0 0, 8 3, 0 6" fill="rgba(111, 66, 193, 0.35)" />
+              </marker>
+            </defs>
             {paths.map((path) => (
               <path
                 key={path.key}
                 d={path.d}
                 fill="none"
-                stroke="rgba(111, 66, 193, 0.24)"
+                stroke="rgba(111, 66, 193, 0.28)"
                 strokeWidth="2"
                 strokeLinecap="round"
+                markerEnd="url(#arrowhead)"
               />
             ))}
           </svg>
@@ -202,7 +244,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
               <div
                 key={node.id}
                 onClick={() => onNodeClick?.(node.id, node.nome)}
-                title={!node.disponivel ? "Complete o tópico anterior para desbloquear (70%)" : node.nome}
+                title={!node.disponivel ? "Complete os pré-requisitos para desbloquear (70%)" : node.nome}
                 style={{
                   position: "absolute",
                   left: node.position.x,
@@ -260,7 +302,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
         </div>
       )}
 
-      {/* Lista de nós (visível em modo compacto e em telas pequenas) */}
+      {/* Lista de nós — modo compacto ou mobile */}
       <div
         className={compacto ? "graph-list graph-list-scroll" : "graph-mobile-list"}
         style={embedded && compacto ? { maxHeight: "none", flex: 1, overflowY: "auto" } : undefined}
@@ -271,7 +313,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
             <div
               key={node.id}
               onClick={() => onNodeClick?.(node.id, node.nome)}
-              title={!node.disponivel ? "Complete o tópico anterior para desbloquear (70%)" : node.nome}
+              title={!node.disponivel ? "Complete os pré-requisitos para desbloquear (70%)" : node.nome}
               style={{
                 border: isSelecionado ? "2px solid #6f42c1" : node.disponivel ? "1px solid #e7e0f2" : "1px solid #cbd5e1",
                 borderRadius: 14,

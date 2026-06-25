@@ -12,8 +12,12 @@ function ProtectedLayout() {
   return (
     <ProtectedRoute>
       <ProgressoProvider>
-        <Navbar />
-        <Outlet />
+        <div className="protected-layout">
+          <Navbar />
+          <div className="protected-content">
+            <Outlet />
+          </div>
+        </div>
       </ProgressoProvider>
     </ProtectedRoute>
   );

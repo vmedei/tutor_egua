@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Exercicio, ProgressoAluno, Sessao, Topico
+from app.models import Exercicio, Prerequisito, ProgressoAluno, Sessao, Topico
 from app.schemas.exercicio import ExercicioResponse
 from app.schemas.progresso import ProgressoGlobalResponse, ProgressoResponse, TopicoProgressoItem
 from app.services.seletor import selecionar_exercicio
@@ -71,6 +71,15 @@ async def progresso_global(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_d
     )
     prog_map = {p.topico_id: p for p in prog_list}
 
+    # Busca todas as arestas do DAG e monta mapa: topico_id → [codigo dos pré-requisitos]
+    prereqs_rows = list(await db.scalars(select(Prerequisito)))
+    topico_id_to_codigo = {t.id: t.codigo for t in topicos}
+    prereqs_map: dict[uuid.UUID, list[str]] = {}
+    for row in prereqs_rows:
+        prereq_codigo = topico_id_to_codigo.get(row.requer_id)
+        if prereq_codigo:
+            prereqs_map.setdefault(row.topico_id, []).append(prereq_codigo)
+
     por_topico: list[TopicoProgressoItem] = []
     soma = 0.0
     for t in topicos:
@@ -85,6 +94,7 @@ async def progresso_global(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_d
             pct=round(prof * 100),
             tentativas=p.tentativas if p else 0,
             acertos=p.acertos if p else 0,
+            prerequisitos=prereqs_map.get(t.id, []),
         ))
 
     global_pct = round(soma / len(topicos) * 100, 1) if topicos else 0.0

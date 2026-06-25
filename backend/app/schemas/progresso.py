@@ -24,6 +24,7 @@ class TopicoProgressoItem(BaseModel):
     pct: int
     tentativas: int
     acertos: int
+    prerequisitos: list[str] = []
 
 
 class ProgressoGlobalResponse(BaseModel):

@@ -29,6 +29,38 @@ Regras de comportamento:
 - Seja encorajador, paciente e didático
 - Seja conciso: máximo 3 parágrafos por resposta
 - Quando mostrar código, use bloco de código
+- NUNCA faça perguntas genéricas sobre objetivos do aluno, experiência prévia ou preferências
+
+════════════════════════════════════════
+MODOS DE OPERAÇÃO
+════════════════════════════════════════
+
+## Modo: apresentação de exercício
+Ativado quando o contexto contém "Próximo exercício:" (sem histórico anterior).
+
+Instruções:
+1. Explique SOMENTE os 1-2 conceitos necessários para resolver aquele exercício específico
+2. Use um exemplo curto e prático em Égua que ilustre o conceito pedido
+3. Termine OBRIGATORIAMENTE com esta frase (ou variação curta dela):
+   "Pronto para praticar? Clique em **Fazer exercício** quando quiser começar — ou me pergunte mais!"
+4. Máximo 2 parágrafos + convite. Não alongue além disso.
+
+## Modo: próximo exercício após acerto
+Ativado quando a mensagem do sistema começa com "[próximo-exercício]".
+
+Instruções:
+1. Em UMA frase curta, parabenize o avanço do aluno (não exagere)
+2. Apresente o conceito central do próximo exercício em 1 parágrafo
+3. Termine com: "Quer tentar? Clique em **Fazer exercício**!"
+4. Máximo 2 parágrafos no total.
+
+## Modo: dúvida durante exercício
+Ativado quando há histórico de mensagens com exercício em andamento.
+
+Instruções:
+1. Responda diretamente a dúvida do aluno
+2. Dê dicas progressivas sem revelar a resposta completa
+3. Se o aluno mostrar código, aponte o erro com explicação clara
 
 ════════════════════════════════════════
 REFERÊNCIA COMPLETA DA LINGUAGEM ÉGUA
@@ -211,23 +243,40 @@ async def responder(
     if not settings.groq_api_key:
         return "Chatbot indisponível: chave GROQ_API_KEY não configurada.", 0
 
-    # Monta contexto do exercício como prefixo da primeira mensagem do aluno
-    prefixo = ""
-    if contexto_topico or contexto_exercicio:
-        partes = []
-        if contexto_topico:
-            partes.append(f"Tópico atual: {contexto_topico}")
-        if contexto_exercicio:
-            partes.append(f"Exercício: {contexto_exercicio}")
-        prefixo = "[Contexto: " + " | ".join(partes) + "]\n\n"
-
-    # Monta messages no formato OpenAI (compatível com Groq)
+    # Monta contexto e determina modo de operação
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for msg in historico:
         role = "user" if msg.papel == "aluno" else "assistant"
         messages.append({"role": role, "content": msg.texto})
 
-    texto_final = (prefixo + mensagem) if (prefixo and not historico) else mensagem
+    # Prefixo varia conforme o modo
+    eh_proximo_exercicio = mensagem.startswith("[próximo-exercício]")
+
+    if eh_proximo_exercicio and contexto_exercicio:
+        # Modo: próximo exercício após acerto — trigger interno não aparece na UI
+        texto_final = (
+            f"[próximo-exercício]\n"
+            f"Tópico: {contexto_topico or ''}\n"
+            f"Próximo exercício: {contexto_exercicio}"
+        )
+    elif not historico and contexto_exercicio:
+        # Modo: apresentação inicial do exercício ao aluno
+        texto_final = (
+            f"Tópico: {contexto_topico or ''}\n"
+            f"Próximo exercício: {contexto_exercicio}\n\n"
+            f"{mensagem}"
+        )
+    elif contexto_topico or contexto_exercicio:
+        # Modo: dúvida durante exercício
+        partes = []
+        if contexto_topico:
+            partes.append(f"Tópico: {contexto_topico}")
+        if contexto_exercicio:
+            partes.append(f"Exercício em andamento: {contexto_exercicio}")
+        texto_final = "[" + " | ".join(partes) + "]\n\n" + mensagem
+    else:
+        texto_final = mensagem
+
     messages.append({"role": "user", "content": texto_final})
 
     try:

@@ -107,6 +107,14 @@ function ExercicioCard({
   const eLivre = exercicio.tipo === "implementacao_livre";
   const casos = exercicio.casos_de_teste ?? [];
 
+  // Após resposta correta, avança automaticamente depois de 1 s
+  useEffect(() => {
+    if (!submissao?.correto) return;
+    const t = setTimeout(onProximoExercicio, 1000);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submissao?.correto]);
+
   const tentarNovamente = () => {
     setCodigo("");
     setResposta("");
@@ -152,7 +160,6 @@ function ExercicioCard({
       border: "1px solid #dee2e6", borderRadius: 12, overflow: "hidden",
       background: "#fff", marginTop: 4,
     }}>
-      {/* Cabeçalho */}
       <div style={{
         background: "#5c2e91", color: "#fff", padding: "10px 16px",
         fontSize: 13, fontWeight: 700,
@@ -161,12 +168,10 @@ function ExercicioCard({
       </div>
 
       <div style={{ padding: 16 }}>
-        {/* Enunciado */}
         <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, fontSize: 14, margin: "0 0 14px" }}>
           {exercicio.enunciado}
         </p>
 
-        {/* Casos de teste visíveis */}
         {eLivre && casos.length > 0 && (
           <div style={{ background: "#f8f9fa", borderRadius: 8, padding: 12, marginBottom: 12 }}>
             <strong style={{ fontSize: 12, color: "#495057" }}>Exemplos:</strong>
@@ -189,7 +194,6 @@ function ExercicioCard({
           </div>
         )}
 
-        {/* Múltipla escolha */}
         {exercicio.tipo === "multipla_escolha" && exercicio.gabarito?.opcoes && !submissao && (
           <div style={{ marginBottom: 12 }}>
             {exercicio.gabarito.opcoes.map((op, i) => (
@@ -211,7 +215,6 @@ function ExercicioCard({
           </div>
         )}
 
-        {/* Completar código */}
         {exercicio.tipo === "completar_codigo" && !submissao && (
           <input
             value={resposta}
@@ -224,7 +227,6 @@ function ExercicioCard({
           />
         )}
 
-        {/* Editor de código */}
         {eLivre && !submissao && (
           <textarea
             value={codigo}
@@ -250,7 +252,6 @@ function ExercicioCard({
           />
         )}
 
-        {/* Resultado da execução */}
         {execucao && !submissao && (
           <div style={{ marginBottom: 12 }}>
             {execucao.erro && (
@@ -290,7 +291,6 @@ function ExercicioCard({
           </div>
         )}
 
-        {/* Botões de ação */}
         {!submissao && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {eLivre && (
@@ -312,7 +312,6 @@ function ExercicioCard({
           </div>
         )}
 
-        {/* Resultado da submissão */}
         {submissao && (
           <div style={{
             padding: 14, borderRadius: 8,
@@ -342,9 +341,11 @@ function ExercicioCard({
                   ↩ Tentar novamente
                 </button>
               )}
-              <button onClick={onProximoExercicio} style={submissao.correto ? S.btnSuccess : S.btnSecondary}>
-                Próximo exercício →
-              </button>
+              {submissao.correto && (
+                <button onClick={onProximoExercicio} style={S.btnSuccess}>
+                  Prosseguir →
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -428,92 +429,99 @@ export function ChatPanel({ topicoSelecionado }: Props) {
   const [buscandoExercicio, setBuscandoExercicio] = useState(false);
   const [tempoEspera, setTempoEspera] = useState(0);
   const [contextoExercicio, setContextoExercicio] = useState("");
+  const [proximoExercicio, setProximoExercicio] = useState<ExercicioData | null>(null);
   const fimRef = useRef<HTMLDivElement>(null);
   const counter = useRef(0);
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
   const genId = () => ++counter.current;
 
-  // Countdown do rate limit
   useEffect(() => {
     if (tempoEspera <= 0) return;
     const id = setTimeout(() => setTempoEspera((t) => t - 1), 1000);
     return () => clearTimeout(id);
   }, [tempoEspera]);
 
-  // Scroll automático
   useEffect(() => {
     fimRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [historico, carregando, buscandoExercicio]);
 
-  const buscarProximoExercicio = useCallback(async (topicoCodigo: string) => {
+  // Busca o próximo exercício do tópico e armazena (sem adicionar ao histórico)
+  const buscarProximoExercicio = useCallback(async (topicoCodigo: string): Promise<ExercicioData | null> => {
     setBuscandoExercicio(true);
     try {
-      const { data } = await api.get(`/tutor/exercicio-por-topico/${alunoId}/${topicoCodigo}`);
-      const msgEx: MensagemExercicio = { id: genId(), papel: "sistema", tipo: "exercicio", exercicio: data };
-      setHistorico((prev) => [...prev, msgEx]);
+      const { data } = await api.get<ExercicioData>(`/tutor/exercicio-por-topico/${alunoId}/${topicoCodigo}`);
+      setProximoExercicio(data);
       setContextoExercicio(data.enunciado);
+      return data;
     } catch {
-      const msgFim: MensagemTexto = {
-        id: genId(), papel: "assistente",
-        texto: "Você já completou todos os exercícios deste tópico! Escolha outro no grafo ou continue praticando.",
-      };
-      setHistorico((prev) => [...prev, msgFim]);
+      setProximoExercicio(null);
+      return null;
     } finally {
       setBuscandoExercicio(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alunoId]);
 
-  // Quando o tópico muda: reset e auto-envio da mensagem de estudo
-  useEffect(() => {
+  // Mostra o exercício pré-buscado no histórico
+  const mostrarExercicio = () => {
+    if (!proximoExercicio) return;
+    setHistorico((prev) => [...prev, {
+      id: genId(),
+      papel: "sistema" as const,
+      tipo: "exercicio" as const,
+      exercicio: proximoExercicio,
+    }]);
+    setProximoExercicio(null);
+  };
+
+  // Após resposta correta: IA apresenta o próximo exercício e disponibiliza botão
+  const aoProximoExercicio = useCallback(async () => {
     if (!topicoSelecionado) return;
 
-    const { codigo, nome } = topicoSelecionado;
-    const msgEstudo = `quero estudar sobre ${nome}`;
-    const msgUsuario: MensagemTexto = { id: genId(), papel: "aluno", texto: msgEstudo };
+    setBuscandoExercicio(true);
+    try {
+      const { data: proxExercicio } = await api.get<ExercicioData>(
+        `/tutor/exercicio-por-topico/${alunoId}/${topicoSelecionado.codigo}`
+      );
+      setProximoExercicio(proxExercicio);
+      setContextoExercicio(proxExercicio.enunciado);
 
-    setHistorico([msgUsuario]);
-    setContextoExercicio("");
-    setInput("");
-    setTempoEspera(0);
-
-    let cancelled = false;
-
-    const estudar = async () => {
+      // IA apresenta o próximo exercício automaticamente
       setCarregando(true);
-      try {
-        const { data } = await api.post("/chat/", {
-          mensagem: msgEstudo,
-          historico: [],
-          contexto_topico: nome,
-          contexto_exercicio: "",
-        });
-        if (cancelled) return;
+      const { data: iaData } = await api.post("/chat/", {
+        mensagem: "[próximo-exercício]",
+        historico: [],
+        contexto_topico: topicoSelecionado.nome,
+        contexto_exercicio: proxExercicio.enunciado,
+      });
+      setHistorico((prev) => [...prev, {
+        id: genId(),
+        papel: "assistente" as const,
+        texto: iaData.resposta,
+      }]);
+    } catch {
+      setProximoExercicio(null);
+      setContextoExercicio("");
+      setHistorico((prev) => [...prev, {
+        id: genId(),
+        papel: "assistente" as const,
+        texto: "Você concluiu todos os exercícios deste tópico! 🎉 Escolha outro tópico no grafo para continuar.",
+      }]);
+    } finally {
+      setBuscandoExercicio(false);
+      setCarregando(false);
+    }
+  }, [alunoId, topicoSelecionado]);
 
-        const msgIA: MensagemTexto = { id: genId(), papel: "assistente", texto: data.resposta };
-        setHistorico([msgUsuario, msgIA]);
-
-        if (!cancelled) await buscarProximoExercicio(codigo);
-      } catch (err: unknown) {
-        if (cancelled) return;
-        const status = (err as { response?: { status?: number; data?: { detail?: string } } })?.response;
-        if (status?.status === 429) {
-          const detalhe = status.data?.detail ?? "Limite atingido. Tente em alguns segundos.";
-          const match = detalhe.match(/(\d+) segundo/);
-          const wait = match ? parseInt(match[1]) : 60;
-          setTempoEspera(wait);
-          setHistorico([msgUsuario, { id: genId(), papel: "assistente", tipo: "aviso", texto: `⏳ ${detalhe}` }]);
-        } else {
-          setHistorico([msgUsuario, { id: genId(), papel: "assistente", texto: "Erro ao carregar. Tente selecionar o tópico novamente." }]);
-        }
-      } finally {
-        if (!cancelled) setCarregando(false);
-      }
-    };
-
-    estudar();
-    return () => { cancelled = true; };
+  // Quando o tópico muda: pré-preenche o input e pré-busca o exercício
+  useEffect(() => {
+    if (!topicoSelecionado) return;
+    setHistorico([]);
+    setContextoExercicio("");
+    setTempoEspera(0);
+    setProximoExercicio(null);
+    setInput(`quero estudar sobre ${topicoSelecionado.nome}`);
+    buscarProximoExercicio(topicoSelecionado.codigo);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicoSelecionado?.codigo]);
 
@@ -555,6 +563,7 @@ export function ChatPanel({ topicoSelecionado }: Props) {
   };
 
   const bloqueado = carregando || buscandoExercicio || tempoEspera > 0;
+  const temRespostaIA = historico.some((m) => m.papel === "assistente");
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -578,12 +587,16 @@ export function ChatPanel({ topicoSelecionado }: Props) {
         display: "flex", flexDirection: "column", gap: 10,
         background: "#fafafa",
       }}>
-        {historico.length === 0 && !carregando && (
+        {historico.length === 0 && !carregando && !buscandoExercicio && (
           <div style={{
             margin: "auto", textAlign: "center", color: "#94a3b8", fontSize: 14, padding: 40,
           }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
-            <p>Selecione um tópico no grafo ao lado para começar a estudar.</p>
+            {topicoSelecionado ? (
+              <p>Clique em <strong>Enviar</strong> para começar a estudar <strong>{topicoSelecionado.nome}</strong>.</p>
+            ) : (
+              <p>Selecione um tópico no grafo ao lado para começar a estudar.</p>
+            )}
           </div>
         )}
 
@@ -594,7 +607,7 @@ export function ChatPanel({ topicoSelecionado }: Props) {
                 <ExercicioCard
                   exercicio={msg.exercicio}
                   alunoId={alunoId}
-                  onProximoExercicio={() => topicoSelecionado && buscarProximoExercicio(topicoSelecionado.codigo)}
+                  onProximoExercicio={aoProximoExercicio}
                 />
               </div>
             );
@@ -606,6 +619,38 @@ export function ChatPanel({ topicoSelecionado }: Props) {
         })}
 
         {(carregando || buscandoExercicio) && <BolhaDigitando />}
+
+        {/* Botão "Fazer exercício" — aparece após a IA responder, se há exercício disponível */}
+        {proximoExercicio && temRespostaIA && !carregando && !buscandoExercicio && (
+          <div style={{ display: "flex", justifyContent: "flex-start" }}>
+            <button
+              onClick={mostrarExercicio}
+              style={{
+                padding: "10px 20px",
+                background: "#5c2e91",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontWeight: 700,
+                fontSize: 13,
+                boxShadow: "0 4px 12px rgba(92, 46, 145, 0.3)",
+                transition: "transform 0.15s ease, box-shadow 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = "0 6px 16px rgba(92, 46, 145, 0.4)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(92, 46, 145, 0.3)";
+              }}
+            >
+              Fazer exercício →
+            </button>
+          </div>
+        )}
+
         <div ref={fimRef} />
       </div>
 

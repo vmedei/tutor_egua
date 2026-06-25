@@ -28,8 +28,6 @@ exercicios:
     enunciado: |
       Escreva um programa em Égua que exiba exatamente o texto abaixo:
       Egua
-
-      Dica: use escreva("Egua")
     tipo: implementacao_livre
     nivel_bloom: 1
     gabarito:

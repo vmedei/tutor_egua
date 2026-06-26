@@ -20,13 +20,13 @@ interface NodeExibido {
   disponivel: boolean;
 }
 
-const NODE_WIDTH = 210;
-const NODE_HEIGHT = 92;
-const COLUMN_GAP = 46;
-const ROW_GAP = 40;
-const CONTENT_PADDING = 28;
-const HEADER_HEIGHT = 80;
-const COLS_PER_ROW = 4;
+const NODE_WIDTH = 168;
+const NODE_HEIGHT = 80;
+const COLUMN_GAP = 16;
+const ROW_GAP = 20;
+const CONTENT_PADDING = 16;
+const HEADER_HEIGHT = 0;
+const COLS_PER_ROW = 3;
 const LIMIAR_DESBLOQUEIO = 70;
 
 function normalizarPct(proficiencia: number) {
@@ -126,7 +126,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
 
   const stageWidth = useMemo(() => {
     const maxX = nodes.reduce((max, node) => Math.max(max, node.position.x + NODE_WIDTH), 0);
-    return Math.max(900, maxX + CONTENT_PADDING);
+    return maxX + CONTENT_PADDING;
   }, [nodes]);
 
   const stageHeight = useMemo(() => {
@@ -202,16 +202,14 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
       {!compacto && (
         <div
           className="graph-stage"
-          style={{
-            height: stageHeight,
-            ...(embedded ? { flexShrink: 0, overflowY: "auto" } : {}),
-          }}
+          style={{ height: stageHeight }}
         >
+          <div style={{ position: "relative", width: stageWidth, height: stageHeight, margin: "0 auto" }}>
           <svg
             width={stageWidth}
             height={stageHeight}
             viewBox={`0 0 ${stageWidth} ${stageHeight}`}
-            style={{ position: "absolute", top: 0, left: 0, width: stageWidth, height: stageHeight, minWidth: "100%" }}
+            style={{ position: "absolute", top: 0, left: 0, width: stageWidth, height: stageHeight }}
           >
             <defs>
               <marker
@@ -244,7 +242,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
               <div
                 key={node.id}
                 onClick={() => onNodeClick?.(node.id, node.nome)}
-                title={!node.disponivel ? "Complete os pré-requisitos para desbloquear (70%)" : node.nome}
+                title={!node.disponivel ? "Complete os pré-requisitos para dominar (70%)" : node.nome}
                 style={{
                   position: "absolute",
                   left: node.position.x,
@@ -261,7 +259,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
                   boxShadow: isSelecionado
                     ? "0 0 0 3px rgba(111, 66, 193, 0.18), 0 8px 20px rgba(67, 32, 111, 0.12)"
                     : "0 8px 20px rgba(67, 32, 111, 0.08)",
-                  padding: "14px 14px 12px",
+                  padding: "10px 10px 8px",
                   textAlign: "center",
                   display: "flex",
                   flexDirection: "column",
@@ -273,16 +271,13 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
                   userSelect: "none",
                 }}
               >
-                {!node.disponivel && (
-                  <div style={{ fontSize: 13, marginBottom: 2 }}>🔒</div>
-                )}
-                <div style={{ fontSize: 15, fontWeight: 800, color: node.disponivel ? "#243042" : "#64748b", lineHeight: 1.2 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: node.disponivel ? "#243042" : "#64748b", lineHeight: 1.2 }}>
                   {node.nome}
                 </div>
-                <div style={{ fontSize: 13, color: node.disponivel ? "#475569" : "#94a3b8", fontWeight: 800 }}>
+                <div style={{ fontSize: 12, color: node.disponivel ? "#475569" : "#94a3b8", fontWeight: 800 }}>
                   {node.pct}%
                 </div>
-                <div style={{ height: 7, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 2 }}>
+                <div style={{ height: 6, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 2 }}>
                   <div
                     style={{
                       width: `${node.pct}%`,
@@ -294,11 +289,12 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
                   />
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 800, color: node.disponivel ? "#64748b" : "#94a3b8" }}>
-                  {node.disponivel ? statusLabel(node.status) : "Bloqueado"}
+                  {node.disponivel ? statusLabel(node.status) : "Não dominado"}
                 </div>
               </div>
             );
           })}
+          </div>
         </div>
       )}
 
@@ -313,7 +309,7 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
             <div
               key={node.id}
               onClick={() => onNodeClick?.(node.id, node.nome)}
-              title={!node.disponivel ? "Complete os pré-requisitos para desbloquear (70%)" : node.nome}
+              title={!node.disponivel ? "Complete os pré-requisitos para dominar (70%)" : node.nome}
               style={{
                 border: isSelecionado ? "2px solid #6f42c1" : node.disponivel ? "1px solid #e7e0f2" : "1px solid #cbd5e1",
                 borderRadius: 14,
@@ -327,10 +323,10 @@ export function GrafoProgresso({ porTopico, compacto = false, embedded = false, 
             >
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
                 <strong style={{ color: node.disponivel ? "#243042" : "#64748b", fontSize: 14 }}>
-                  {!node.disponivel && "🔒 "}{node.nome}
+                  {node.nome}
                 </strong>
                 <span style={{ color: "#64748b", fontSize: 12, fontWeight: 800 }}>
-                  {node.disponivel ? statusLabel(node.status) : "Bloqueado"}
+                  {node.disponivel ? statusLabel(node.status) : "Não dominado"}
                 </span>
               </div>
               <div style={{ height: 8, borderRadius: 999, background: "#ede7f7", overflow: "hidden", marginTop: 10 }}>

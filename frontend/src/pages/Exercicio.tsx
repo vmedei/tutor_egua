@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../api/client";
 import { ChatBot } from "../components/ChatBot";
 import { TrilhaProgresso } from "../components/TrilhaProgresso";
@@ -97,7 +97,10 @@ export function Exercicio() {
 
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
-  const resetEstado = () => {
+  const porTopicoRef = useRef(porTopico);
+  porTopicoRef.current = porTopico;
+
+  const resetEstado = useCallback(() => {
     setCodigo("");
     setResposta("");
     setExecucao(null);
@@ -105,9 +108,14 @@ export function Exercicio() {
     setDicasUsadas(0);
     setErro(null);
     setConcluido(false);
-  };
+  }, []);
 
-  const carregarProximo = () => {
+  const carregarProximo = useCallback(() => {
+    if (!alunoId) {
+      setErro("Sessão inválida. Faça login novamente.");
+      setCarregando(false);
+      return;
+    }
     resetEstado();
     setExercicio(null);
     setCarregando(true);
@@ -117,7 +125,7 @@ export function Exercicio() {
       .then(({ data }) => {
         setExercicio(data);
         setExercicioAtivo(data.id);
-        const tp = porTopico.find((t) => t.topico_id === String(data.topico_id));
+        const tp = porTopicoRef.current.find((t) => t.topico_id === String(data.topico_id));
         setTopicoAtivo(tp?.topico_codigo ?? null);
       })
       .catch((e) => {
@@ -125,7 +133,7 @@ export function Exercicio() {
         else setErro("Erro ao carregar exercício. Tente novamente.");
       })
       .finally(() => setCarregando(false));
-  };
+  }, [alunoId, resetEstado]);
 
   const carregarPorTopico = (topicoCodigo: string) => {
     resetEstado();
@@ -174,14 +182,8 @@ export function Exercicio() {
   };
 
   useEffect(() => {
-    if (!alunoId) {
-      setErro("Sessão inválida. Faça login novamente.");
-      setCarregando(false);
-      return;
-    }
     carregarProximo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [carregarProximo]);
 
   const executar = async () => {
     if (!exercicio || executando) return;

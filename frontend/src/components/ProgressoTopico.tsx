@@ -3,6 +3,7 @@ import type { TopicoProgresso } from "../hooks/useProgresso";
 
 interface Props {
   topico: TopicoProgresso | null;
+  prerequisitos?: TopicoProgresso[];
   style?: CSSProperties;
 }
 
@@ -15,7 +16,7 @@ function statusLabel(pct: number) {
   return { label: "Iniciante", color: "#1e40af", bg: "#dbeafe" };
 }
 
-export function ProgressoTopico({ topico, style }: Props) {
+export function ProgressoTopico({ topico, prerequisitos = [], style }: Props) {
   if (!topico) {
     return (
       <div style={{
@@ -96,6 +97,48 @@ export function ProgressoTopico({ topico, style }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Pré-requisitos */}
+      {prerequisitos.length > 0 && (
+        <div style={{ marginTop: 16, borderTop: "1px solid #e2eef0", paddingTop: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#648088", marginBottom: 10 }}>
+            Pré-requisitos
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {prerequisitos.map((pre) => {
+              const { label: preLabel, color: preColor, bg: preBg } = statusLabel(pre.pct);
+              return (
+                <div key={pre.topico_codigo} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "#f7fafa", borderRadius: 10, padding: "8px 12px",
+                  border: "1px solid #e2eef0",
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#18363d", marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {pre.topico_nome}
+                    </div>
+                    <div style={{ height: 6, borderRadius: 999, background: "#e2eef0", overflow: "hidden" }}>
+                      <div style={{
+                        width: `${pre.pct}%`,
+                        height: "100%",
+                        borderRadius: 999,
+                        background: pre.pct >= LIMIAR_DOMINADO ? "#117a7a" : pre.pct > 0 ? "#f0a43c" : "#d6eaee",
+                        transition: "width 400ms ease",
+                      }} />
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#18363d" }}>{pre.pct}%</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: preBg, color: preColor }}>
+                      {preLabel}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -107,12 +107,14 @@ function ExercicioCard({
   const eLivre = exercicio.tipo === "implementacao_livre";
   const casos = exercicio.casos_de_teste ?? [];
 
+  const onProximoExercicioRef = useRef(onProximoExercicio);
+  onProximoExercicioRef.current = onProximoExercicio;
+
   // Após resposta correta, avança automaticamente depois de 1 s
   useEffect(() => {
     if (!submissao?.correto) return;
-    const t = setTimeout(onProximoExercicio, 1000);
+    const t = setTimeout(() => onProximoExercicioRef.current(), 1000);
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submissao?.correto]);
 
   const tentarNovamente = () => {
@@ -523,8 +525,7 @@ export function ChatPanel({ topicoSelecionado }: Props) {
     if (!topicoSelecionado) return;
     setInput(`quero estudar sobre ${topicoSelecionado.nome}`);
     buscarProximoExercicio(topicoSelecionado.codigo);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topicoSelecionado?.codigo]);
+  }, [topicoSelecionado?.codigo, buscarProximoExercicio]);
 
   const enviar = async () => {
     const texto = input.trim();

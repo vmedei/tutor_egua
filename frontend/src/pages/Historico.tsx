@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "../api/client";
 
 interface HistoricoItem {
@@ -48,7 +48,7 @@ export function Historico() {
   const [erro, setErro] = useState<string | null>(null);
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
-  const carregar = () => {
+  const carregar = useCallback(() => {
     if (!alunoId) {
       setErro("Sessão inválida. Faça login novamente.");
       setLoading(false);
@@ -62,12 +62,11 @@ export function Historico() {
       .then(({ data }) => setItens(data))
       .catch(() => setErro("Não foi possível carregar o histórico de sessões."))
       .finally(() => setLoading(false));
-  };
+  }, [alunoId]);
 
   useEffect(() => {
     carregar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [carregar]);
 
   const agrupadoPorData = useMemo(() => {
     return itens.reduce<Record<string, HistoricoItem[]>>((acc, item) => {

@@ -15,6 +15,9 @@ export function Tutor() {
   }, [resetKey]);
 
   const topicoAtual = porTopico.find((t) => t.topico_codigo === topicoSelecionado?.codigo) ?? null;
+  const prerequisitosAtual = (topicoAtual?.prerequisitos ?? [])
+    .map((code) => porTopico.find((t) => t.topico_codigo === code))
+    .filter((t): t is NonNullable<typeof t> => t != null);
 
   return (
     <div className="tutor-page">
@@ -51,6 +54,7 @@ export function Tutor() {
         <div className="tutor-card" style={{ overflow: "auto" }}>
           <ProgressoTopico
             topico={topicoAtual}
+            prerequisitos={prerequisitosAtual}
             style={{ height: "100%", boxSizing: "border-box" }}
           />
         </div>

@@ -5,7 +5,7 @@ import { useProgresso } from "../hooks/useProgresso";
 import { Modal } from "./Modal";
 
 export function Navbar() {
-  const { globalPct, recarregar } = useProgresso();
+  const { globalPct, recarregar, sinalReset } = useProgresso();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const nome = localStorage.getItem("nome") ?? "Aluno";
@@ -27,6 +27,7 @@ export function Navbar() {
       setModalAberto(false);
       setMensagemSucesso(true);
       recarregar();
+      sinalReset();
       setTimeout(() => setMensagemSucesso(false), 3000);
     } catch {
       setModalAberto(false);
@@ -88,6 +89,9 @@ export function Navbar() {
             <div className="app-nav-links">
               <Link to="/tutor" style={pathname === "/tutor" ? linkAtivo : linkBase}>
                 Tutor
+              </Link>
+              <Link to="/exercicio" style={pathname === "/exercicio" ? linkAtivo : linkBase}>
+                Exercícios
               </Link>
               <Link to="/dashboard" style={pathname === "/dashboard" ? linkAtivo : linkBase}>
                 Dashboard

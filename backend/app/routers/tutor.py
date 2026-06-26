@@ -53,6 +53,41 @@ async def exercicio_por_topico(
     return resp
 
 
+@router.get("/exercicios-status/{aluno_id}")
+async def exercicios_status(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """Retorna todos os tópicos com o status individual de cada exercício (tentado/correto)."""
+    topicos = list(await db.scalars(select(Topico).order_by(Topico.ordem)))
+
+    exercicios_todos = list(await db.scalars(
+        select(Exercicio).order_by(Exercicio.nivel_bloom.asc(), Exercicio.id.asc())
+    ))
+
+    # Melhor resultado por exercício: se acertou em alguma tentativa, marca correto
+    sessoes = list(await db.scalars(select(Sessao).where(Sessao.aluno_id == aluno_id)))
+    sessao_map: dict[uuid.UUID, bool] = {}
+    for s in sessoes:
+        if s.exercicio_id not in sessao_map or s.correto:
+            sessao_map[s.exercicio_id] = s.correto
+
+    result = []
+    for t in topicos:
+        exs = [e for e in exercicios_todos if e.topico_id == t.id]
+        result.append({
+            "topico_codigo": t.codigo,
+            "topico_nome": t.nome,
+            "exercicios": [
+                {
+                    "id": str(e.id),
+                    "tipo": e.tipo,
+                    "tentado": e.id in sessao_map,
+                    "correto": sessao_map.get(e.id, False),
+                }
+                for e in exs
+            ],
+        })
+    return result
+
+
 @router.get("/progresso/{aluno_id}", response_model=list[ProgressoResponse])
 async def progresso_aluno(aluno_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     result = await db.scalars(

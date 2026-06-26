@@ -513,13 +513,14 @@ export function ChatPanel({ topicoSelecionado }: Props) {
     }
   }, [alunoId, topicoSelecionado]);
 
-  // Quando o tópico muda: pré-preenche o input e pré-busca o exercício
+  // Quando o tópico muda (incluindo voltar a null após reset): limpa o chat
   useEffect(() => {
-    if (!topicoSelecionado) return;
     setHistorico([]);
     setContextoExercicio("");
     setTempoEspera(0);
     setProximoExercicio(null);
+    setInput("");
+    if (!topicoSelecionado) return;
     setInput(`quero estudar sobre ${topicoSelecionado.nome}`);
     buscarProximoExercicio(topicoSelecionado.codigo);
   // eslint-disable-next-line react-hooks/exhaustive-deps

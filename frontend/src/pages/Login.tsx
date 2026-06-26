@@ -30,23 +30,6 @@ export function Login() {
       }}
     >
       <div className="card" style={{ width: "100%", maxWidth: 430, padding: 28, boxShadow: "var(--shadow-md)" }}>
-        <div
-          aria-hidden="true"
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 16,
-            display: "grid",
-            placeItems: "center",
-            background: "#f1ebfb",
-            color: "#5c2e91",
-            fontWeight: 900,
-            marginBottom: 16,
-          }}
-        >
-          T
-        </div>
-
         <h1 className="page-title" style={{ fontSize: 32 }}>
           TutorÉgua
         </h1>

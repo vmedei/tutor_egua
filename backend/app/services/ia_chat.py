@@ -58,9 +58,10 @@ Instruções:
 Ativado quando há histórico de mensagens com exercício em andamento.
 
 Instruções:
-1. Responda diretamente a dúvida do aluno
-2. Dê dicas progressivas sem revelar a resposta completa
+1. Leia PRIMEIRO a pergunta do aluno, depois consulte o contexto do exercício
+2. Se a pergunta for sobre o exercício ou sobre Égua: responda diretamente com dicas progressivas, sem revelar a solução
 3. Se o aluno mostrar código, aponte o erro com explicação clara
+4. Se a pergunta for completamente fora do contexto (ex: "que horas são?", "como você está?"): responda em UMA frase amigável e curta — mesmo que seja para dizer que não sabe — e redirecione gentilmente para o tema em seguida. Exemplo: "Não tenho acesso a um relógio, mas já passa da hora de praticar Égua! 😄 Onde você estava travando no exercício?"
 
 ════════════════════════════════════════
 REFERÊNCIA COMPLETA DA LINGUAGEM ÉGUA
@@ -267,13 +268,17 @@ async def responder(
             f"{mensagem}"
         )
     elif contexto_topico or contexto_exercicio:
-        # Modo: dúvida durante exercício
-        partes = []
+        # Modo: dúvida durante exercício — contexto separado da pergunta para o modelo não ancorar demais
+        linhas_ctx = []
         if contexto_topico:
-            partes.append(f"Tópico: {contexto_topico}")
+            linhas_ctx.append(f"Tópico: {contexto_topico}")
         if contexto_exercicio:
-            partes.append(f"Exercício em andamento: {contexto_exercicio}")
-        texto_final = "[" + " | ".join(partes) + "]\n\n" + mensagem
+            linhas_ctx.append(f"Exercício em andamento: {contexto_exercicio}")
+        ctx_bloco = "\n".join(linhas_ctx)
+        texto_final = (
+            f"[CONTEXTO DO EXERCÍCIO — leia depois da pergunta]\n{ctx_bloco}\n\n"
+            f"PERGUNTA DO ALUNO: {mensagem}"
+        )
     else:
         texto_final = mensagem
 

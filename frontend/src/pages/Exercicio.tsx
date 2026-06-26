@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import api from "../api/client";
 import { ChatBot } from "../components/ChatBot";
+import { TrilhaProgresso } from "../components/TrilhaProgresso";
 import { useProgresso } from "../hooks/useProgresso";
 
 interface CasoTeste {
@@ -88,12 +89,13 @@ export function Exercicio() {
   const [execucao, setExecucao] = useState<ResultadoExecucao | null>(null);
   const [submissao, setSubmissao] = useState<ResultadoSubmissao | null>(null);
   const [dicasUsadas, setDicasUsadas] = useState(0);
-  const { recarregar } = useProgresso();
+  const [versaoTrilha, setVersaoTrilha] = useState(0);
+  const [topicoAtivo, setTopicoAtivo] = useState<string | null>(null);
+  const { recarregar, porTopico } = useProgresso();
 
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
-  const carregarProximo = () => {
-    setExercicio(null);
+  const resetEstado = () => {
     setCodigo("");
     setResposta("");
     setExecucao(null);
@@ -101,13 +103,35 @@ export function Exercicio() {
     setDicasUsadas(0);
     setErro(null);
     setConcluido(false);
+  };
+
+  const carregarProximo = () => {
+    resetEstado();
+    setExercicio(null);
     setCarregando(true);
     api
       .get(`/tutor/proximo-exercicio/${alunoId}`)
-      .then(({ data }) => setExercicio(data))
+      .then(({ data }) => { setExercicio(data); setTopicoAtivo(null); })
       .catch((e) => {
         if (e?.response?.status === 404) setConcluido(true);
         else setErro("Erro ao carregar exercício. Tente novamente.");
+      })
+      .finally(() => setCarregando(false));
+  };
+
+  const carregarPorTopico = (topicoCodigo: string) => {
+    resetEstado();
+    setExercicio(null);
+    setCarregando(true);
+    api
+      .get(`/tutor/exercicio-por-topico/${alunoId}/${topicoCodigo}`)
+      .then(({ data }) => { setExercicio(data); setTopicoAtivo(topicoCodigo); })
+      .catch((e) => {
+        if (e?.response?.status === 404) {
+          setErro(`Todos os exercícios de "${topicoCodigo}" já foram concluídos!`);
+        } else {
+          setErro("Erro ao carregar exercício. Tente novamente.");
+        }
       })
       .finally(() => setCarregando(false));
   };
@@ -162,6 +186,7 @@ export function Exercicio() {
       });
       setSubmissao(data);
       recarregar();
+      setVersaoTrilha((v) => v + 1);
     } catch {
       setErro("Erro ao submeter resposta.");
     } finally {
@@ -220,6 +245,19 @@ export function Exercicio() {
 
   return (
     <main className="page page-narrow">
+      {/* Trilha de progresso */}
+      <div className="card" style={{ padding: "16px 0 0", marginBottom: 4 }}>
+        <div style={{ padding: "0 20px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <strong style={{ fontSize: 14, color: "#243042" }}>Trilha de exercícios</strong>
+        </div>
+        <TrilhaProgresso
+          porTopico={porTopico}
+          versao={versaoTrilha}
+          topicoAtivo={topicoAtivo}
+          onTopicoClick={carregarPorTopico}
+        />
+      </div>
+
       <section className="hero-panel" style={{ gridTemplateColumns: "1fr" }}>
         <div>
           <p className="hero-kicker">Prática guiada</p>

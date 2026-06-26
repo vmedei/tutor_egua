@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatPanel, type TopicoSelecionado } from "../components/ChatPanel";
 import { GrafoProgresso } from "../components/GrafoProgresso";
 import { ProgressoTopico } from "../components/ProgressoTopico";
@@ -6,7 +6,13 @@ import { useProgresso } from "../hooks/useProgresso";
 
 export function Tutor() {
   const [topicoSelecionado, setTopicoSelecionado] = useState<TopicoSelecionado | null>(null);
-  const { porTopico, loading } = useProgresso();
+  const { porTopico, loading, resetKey } = useProgresso();
+  const montado = useRef(false);
+
+  useEffect(() => {
+    if (!montado.current) { montado.current = true; return; }
+    setTopicoSelecionado(null);
+  }, [resetKey]);
 
   const topicoAtual = porTopico.find((t) => t.topico_codigo === topicoSelecionado?.codigo) ?? null;
 

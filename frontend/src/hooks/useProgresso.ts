@@ -31,6 +31,8 @@ interface ProgressoCtxType {
   loading: boolean;
   error: string | null;
   recarregar: () => void;
+  resetKey: number;
+  sinalReset: () => void;
 }
 
 export const ProgressoContext = createContext<ProgressoCtxType>({
@@ -39,6 +41,8 @@ export const ProgressoContext = createContext<ProgressoCtxType>({
   loading: true,
   error: null,
   recarregar: () => {},
+  resetKey: 0,
+  sinalReset: () => {},
 });
 
 export function useProgresso() {
@@ -50,6 +54,8 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
   const [porTopico, setPorTopico] = useState<TopicoProgresso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resetKey, setResetKey] = useState(0);
+  const sinalReset = useCallback(() => setResetKey((k) => k + 1), []);
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
   const recarregar = useCallback(() => {
@@ -80,7 +86,7 @@ export function ProgressoProvider({ children }: { children: ReactNode }) {
 
   return createElement(
     ProgressoContext.Provider,
-    { value: { globalPct, porTopico, loading, error, recarregar } },
+    { value: { globalPct, porTopico, loading, error, recarregar, resetKey, sinalReset } },
     children
   );
 }

@@ -12,6 +12,7 @@ interface CasoTeste {
 
 interface ExercicioData {
   id: string;
+  topico_id: string;
   topico_nome: string | null;
   enunciado: string;
   tipo: string;
@@ -91,6 +92,7 @@ export function Exercicio() {
   const [dicasUsadas, setDicasUsadas] = useState(0);
   const [versaoTrilha, setVersaoTrilha] = useState(0);
   const [topicoAtivo, setTopicoAtivo] = useState<string | null>(null);
+  const [exercicioAtivo, setExercicioAtivo] = useState<string | null>(null);
   const { recarregar, porTopico } = useProgresso();
 
   const alunoId = localStorage.getItem("aluno_id") ?? "";
@@ -109,9 +111,15 @@ export function Exercicio() {
     resetEstado();
     setExercicio(null);
     setCarregando(true);
+    setExercicioAtivo(null);
     api
       .get(`/tutor/proximo-exercicio/${alunoId}`)
-      .then(({ data }) => { setExercicio(data); setTopicoAtivo(null); })
+      .then(({ data }) => {
+        setExercicio(data);
+        setExercicioAtivo(data.id);
+        const tp = porTopico.find((t) => t.topico_id === String(data.topico_id));
+        setTopicoAtivo(tp?.topico_codigo ?? null);
+      })
       .catch((e) => {
         if (e?.response?.status === 404) setConcluido(true);
         else setErro("Erro ao carregar exercício. Tente novamente.");
@@ -123,9 +131,14 @@ export function Exercicio() {
     resetEstado();
     setExercicio(null);
     setCarregando(true);
+    setExercicioAtivo(null);
     api
       .get(`/tutor/exercicio-por-topico/${alunoId}/${topicoCodigo}`)
-      .then(({ data }) => { setExercicio(data); setTopicoAtivo(topicoCodigo); })
+      .then(({ data }) => {
+        setExercicio(data);
+        setTopicoAtivo(topicoCodigo);
+        setExercicioAtivo(data.id);
+      })
       .catch((e) => {
         if (e?.response?.status === 404) {
           setErro(`Todos os exercícios de "${topicoCodigo}" já foram concluídos!`);
@@ -133,6 +146,22 @@ export function Exercicio() {
           setErro("Erro ao carregar exercício. Tente novamente.");
         }
       })
+      .finally(() => setCarregando(false));
+  };
+
+  const carregarPorId = (id: string) => {
+    resetEstado();
+    setExercicio(null);
+    setCarregando(true);
+    setExercicioAtivo(id);
+    api
+      .get(`/exercicio/${id}`)
+      .then(({ data }) => {
+        setExercicio(data);
+        const tp = porTopico.find((t) => t.topico_id === String(data.topico_id));
+        setTopicoAtivo(tp?.topico_codigo ?? null);
+      })
+      .catch(() => setErro("Erro ao carregar exercício. Tente novamente."))
       .finally(() => setCarregando(false));
   };
 
@@ -194,79 +223,59 @@ export function Exercicio() {
     }
   };
 
-  if (carregando) {
-    return (
-      <main className="page page-narrow">
-        <div className="notice">Carregando exercício...</div>
-      </main>
-    );
-  }
-
-  if (erro) {
-    return (
-      <main className="page page-narrow">
-        <div className="notice notice-error">
-          <strong>Algo deu errado.</strong>
-          <p style={{ margin: "6px 0 0" }}>{erro}</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (concluido) {
-    return (
-      <main className="page page-narrow" style={{ textAlign: "center" }}>
-        <div className="card exercise-card">
-          <span className="icon-badge" aria-hidden="true" style={{ margin: "0 auto 12px" }}>✓</span>
-          <h2 className="page-title" style={{ fontSize: 28 }}>
-            Parabéns!
-          </h2>
-          <p className="page-subtitle" style={{ margin: "8px auto 22px", maxWidth: 560 }}>
-            Você concluiu todos os exercícios disponíveis. Continue praticando na IDEgua ou aguarde novos conteúdos.
-          </p>
-          <a
-            href="http://programar.egua.dev/"
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-primary"
-            style={{ textDecoration: "none" }}
-          >
-            Abrir IDEgua ↗
-          </a>
-        </div>
-      </main>
-    );
-  }
-
-  if (!exercicio) return null;
-
-  const eLivre = exercicio.tipo === "implementacao_livre";
-  const casos = exercicio.casos_de_teste ?? [];
+  const eLivre = exercicio?.tipo === "implementacao_livre";
+  const casos = exercicio?.casos_de_teste ?? [];
 
   return (
     <main className="page page-narrow">
-      {/* Trilha de progresso */}
-      <div className="card" style={{ padding: "16px 0 0", marginBottom: 4 }}>
-        <div style={{ padding: "0 20px 6px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <strong style={{ fontSize: 14, color: "#243042" }}>Trilha de exercícios</strong>
+      {/* Card unificado: título + trilha — sempre montado para preservar estado de expansão */}
+      <div className="card" style={{ padding: "20px 0 0", marginBottom: 22 }}>
+        <div style={{ padding: "0 24px 8px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <p style={{ margin: "0 0 2px", color: "#6f42c1", fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Prática guiada
+            </p>
+            <h2 style={{ margin: 0, fontSize: 22, color: "#243042", lineHeight: 1.2 }}>Exercícios</h2>
+          </div>
+          {exercicio && (
+            <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0 }}>
+              {exercicio.topico_nome} · {exercicio.tipo.replace(/_/g, " ")}
+            </span>
+          )}
         </div>
         <TrilhaProgresso
           porTopico={porTopico}
           versao={versaoTrilha}
           topicoAtivo={topicoAtivo}
+          exercicioAtivo={exercicioAtivo}
           onTopicoClick={carregarPorTopico}
+          onExercicioClick={carregarPorId}
         />
       </div>
 
-      <section className="hero-panel" style={{ gridTemplateColumns: "1fr" }}>
-        <div>
-          <p className="hero-kicker">Prática guiada</p>
-          <h2 className="hero-title">Exercício</h2>
-          <p className="page-subtitle">
-            {exercicio.topico_nome} · {exercicio.tipo.replace(/_/g, " ")}
-          </p>
+      {carregando && <div className="notice">Carregando exercício...</div>}
+
+      {!carregando && erro && (
+        <div className="notice notice-error">
+          <strong>Algo deu errado.</strong>
+          <p style={{ margin: "6px 0 0" }}>{erro}</p>
         </div>
-      </section>
+      )}
+
+      {!carregando && !erro && concluido && (
+        <div className="card exercise-card" style={{ textAlign: "center" }}>
+          <span className="icon-badge" aria-hidden="true" style={{ margin: "0 auto 12px" }}>✓</span>
+          <h2 className="page-title" style={{ fontSize: 28 }}>Parabéns!</h2>
+          <p className="page-subtitle" style={{ margin: "8px auto 22px", maxWidth: 560 }}>
+            Você concluiu todos os exercícios disponíveis. Continue praticando na IDEgua ou aguarde novos conteúdos.
+          </p>
+          <a href="http://programar.egua.dev/" target="_blank" rel="noreferrer" className="btn btn-primary" style={{ textDecoration: "none" }}>
+            Abrir IDEgua ↗
+          </a>
+        </div>
+      )}
+
+      {!carregando && !erro && !concluido && exercicio && (
 
       <div className="exercise-shell">
         <section className="card card-soft exercise-card">
@@ -483,6 +492,7 @@ export function Exercicio() {
           </section>
         )}
       </div>
+      )}
     </main>
   );
 }

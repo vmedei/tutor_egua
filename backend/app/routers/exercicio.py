@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models import Exercicio
+from app.models import Exercicio, Topico
 from app.schemas.exercicio import ExercicioResponse
 
 router = APIRouter()
@@ -15,13 +15,15 @@ async def buscar_exercicio(exercicio_id: uuid.UUID, db: AsyncSession = Depends(g
     exercicio = await db.get(Exercicio, exercicio_id)
     if not exercicio:
         raise HTTPException(status_code=404, detail="Exercício não encontrado")
-    # Ocultar gabarito na resposta
+    topico = await db.get(Topico, exercicio.topico_id)
     exercicio_dict = {
         "id": exercicio.id,
         "topico_id": exercicio.topico_id,
+        "topico_nome": topico.nome if topico else None,
         "enunciado": exercicio.enunciado,
         "tipo": exercicio.tipo,
         "nivel_bloom": exercicio.nivel_bloom,
+        "casos_de_teste": exercicio.casos_de_teste,
     }
     if exercicio.tipo == "multipla_escolha":
         exercicio_dict["gabarito"] = {"opcoes": exercicio.gabarito.get("opcoes", [])}

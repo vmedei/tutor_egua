@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/client";
 import type { TopicoProgresso } from "../hooks/useProgresso";
 
@@ -19,16 +19,12 @@ interface Props {
   porTopico: TopicoProgresso[];
   versao: number;
   topicoAtivo?: string | null;
+  exercicioAtivo?: string | null;
   onTopicoClick?: (codigo: string) => void;
+  onExercicioClick?: (id: string) => void;
 }
 
 const LIMIAR = 70;
-
-const TIPO_LABEL: Record<string, string> = {
-  multipla_escolha: "Múltipla escolha",
-  completar_codigo: "Completar código",
-  implementacao_livre: "Implementação livre",
-};
 
 function topicColor(pct: number, disponivel: boolean) {
   if (!disponivel) return "#e2e8f0";
@@ -43,11 +39,9 @@ function exColor(correto: boolean, tentado: boolean) {
   return "#cbd5e1";
 }
 
-export function TrilhaProgresso({ porTopico, versao, topicoAtivo, onTopicoClick }: Props) {
+export function TrilhaProgresso({ porTopico, versao, topicoAtivo, exercicioAtivo, onTopicoClick, onExercicioClick }: Props) {
   const [dados, setDados] = useState<TopicoExercicios[]>([]);
   const [expandido, setExpandido] = useState<string | null>(null);
-  const [tooltip, setTooltip] = useState<{ text: string; x: number } | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const alunoId = localStorage.getItem("aluno_id") ?? "";
 
   useEffect(() => {
@@ -57,7 +51,11 @@ export function TrilhaProgresso({ porTopico, versao, topicoAtivo, onTopicoClick 
       .catch(() => {});
   }, [alunoId, versao]);
 
-  // Disponibilidade seguindo a mesma lógica do GrafoProgresso
+  // Auto-expande o tópico ativo para manter os círculos de exercícios visíveis
+  useEffect(() => {
+    if (topicoAtivo) setExpandido(topicoAtivo);
+  }, [topicoAtivo]);
+
   const pctMap = new Map(porTopico.map((t) => [t.topico_codigo, t.pct]));
   function isDisponivel(codigo: string) {
     const tp = porTopico.find((t) => t.topico_codigo === codigo);
@@ -69,20 +67,11 @@ export function TrilhaProgresso({ porTopico, versao, topicoAtivo, onTopicoClick 
   }
 
   function handleTopicClick(codigo: string) {
-    const avail = isDisponivel(codigo);
-    // Expande/recolhe independentemente de disponibilidade (para ver status visual)
     setExpandido((prev) => (prev === codigo ? null : codigo));
-    if (avail) onTopicoClick?.(codigo);
+    if (isDisponivel(codigo)) onTopicoClick?.(codigo);
   }
 
-  function showTooltip(e: React.MouseEvent, text: string) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const cRect = containerRef.current?.getBoundingClientRect();
-    const x = cRect ? rect.left - cRect.left + rect.width / 2 : 0;
-    setTooltip({ text, x });
-  }
-
-  // ── Constrói lista plana de itens para renderizar ──────────────────────────
+  // ── Constrói lista plana de itens ─────────────────────────────────────────
   type Item =
     | { kind: "topic"; tp: TopicoProgresso; d: TopicoExercicios | undefined }
     | { kind: "ex"; ex: ExercicioStatus };
@@ -109,21 +98,12 @@ export function TrilhaProgresso({ porTopico, versao, topicoAtivo, onTopicoClick 
       const avail = isDisponivel(tp.topico_codigo);
       const isAtivo = topicoAtivo === tp.topico_codigo;
       const isExp = expandido === tp.topico_codigo;
-      const pct = tp.pct;
-      const color = topicColor(pct, avail);
-      const concluidos = d ? d.exercicios.filter((e) => e.correto).length : 0;
-      const total = d ? d.exercicios.length : 0;
-      const tipText = avail
-        ? `${tp.topico_nome} — ${pct}% (${concluidos}/${total} corretos)`
-        : `${tp.topico_nome} — Bloqueado`;
+      const color = topicColor(tp.pct, avail);
 
       nodes.push(
         <div
           key={tp.topico_codigo}
-          onMouseEnter={(e) => showTooltip(e, tipText)}
-          onMouseLeave={() => setTooltip(null)}
           onClick={() => handleTopicClick(tp.topico_codigo)}
-          title=""
           style={{
             width: 22,
             height: 22,
@@ -139,73 +119,62 @@ export function TrilhaProgresso({ porTopico, versao, topicoAtivo, onTopicoClick 
               : "2px solid #fff",
             boxShadow: "0 0 0 1.5px rgba(100,60,160,0.18)",
             transition: "all 140ms ease",
-            position: "relative",
           }}
         />
       );
+      void d; // suprime aviso de variável não usada
     } else {
       const { ex } = item;
-      const label = TIPO_LABEL[ex.tipo] ?? ex.tipo;
-      const status = ex.correto ? "Correto ✓" : ex.tentado ? "Tentado" : "Não tentado";
+      const isExAtivo = exercicioAtivo === ex.id;
 
       nodes.push(
         <div
           key={ex.id}
-          onMouseEnter={(e) => showTooltip(e, `${label} — ${status}`)}
-          onMouseLeave={() => setTooltip(null)}
+          onClick={() => onExercicioClick?.(ex.id)}
           style={{
             width: 10,
             height: 10,
             borderRadius: "50%",
             background: exColor(ex.correto, ex.tentado),
             flexShrink: 0,
-            border: "1.5px solid rgba(255,255,255,0.85)",
-            boxShadow: "0 0 0 1px rgba(100,100,100,0.1)",
-            transition: "background 140ms ease",
+            cursor: onExercicioClick ? "pointer" : "default",
+            border: isExAtivo ? "2px solid #6f42c1" : "1.5px solid rgba(255,255,255,0.85)",
+            boxShadow: isExAtivo
+              ? "0 0 0 2px rgba(111,66,193,0.35)"
+              : "0 0 0 1px rgba(100,100,100,0.1)",
+            transition: "background 140ms ease, box-shadow 140ms ease",
           }}
         />
       );
     }
 
-    // Conector após o item (exceto o último)
     if (!isLast) {
       const curIsEx = item.kind === "ex";
       const nxtIsEx = next?.kind === "ex";
-      // ex→ex: 10px, topic→ex ou ex→topic: 14px, topic→topic: 30px
-      const w = curIsEx && nxtIsEx ? 10 : curIsEx || nxtIsEx ? 14 : 30;
-      nodes.push(
-        <div
-          key={`c${i}`}
-          style={{ width: w, height: 2, background: "#e2e8f0", flexShrink: 0 }}
-        />
-      );
+      const isTopicToTopic = !curIsEx && !nxtIsEx;
+
+      // Conectores tópico→tópico crescem para preencher a largura disponível;
+      // conectores envolvendo exercícios têm largura fixa para manter compactos
+      if (isTopicToTopic) {
+        nodes.push(
+          <div key={`c${i}`} style={{ flex: 1, minWidth: 30, height: 2, background: "#e2e8f0" }} />
+        );
+      } else {
+        const w = curIsEx && nxtIsEx ? 10 : 14;
+        nodes.push(
+          <div key={`c${i}`} style={{ width: w, height: 2, background: "#e2e8f0", flexShrink: 0 }} />
+        );
+      }
     }
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        overflowX: "auto",
-        padding: "4px 24px 16px",
-        position: "relative",
-        scrollbarWidth: "none",
-      }}
-    >
-      {/* Trilha */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          minWidth: "max-content",
-          height: 44,
-          paddingTop: 8,
-        }}
-      >
+    <div style={{ overflowX: "auto", padding: "4px 24px 16px", scrollbarWidth: "none" }}>
+      {/* minWidth: 100% faz a trilha preencher o card; flex:1 nos conectores distribui o espaço */}
+      <div style={{ display: "flex", alignItems: "center", minWidth: "100%", height: 44, paddingTop: 8 }}>
         {nodes}
       </div>
 
-      {/* Legenda */}
       <div style={{ display: "flex", gap: 16, marginTop: 4, flexWrap: "wrap" }}>
         {[
           { color: "#198754", label: "Dominado" },
@@ -222,44 +191,6 @@ export function TrilhaProgresso({ porTopico, versao, topicoAtivo, onTopicoClick 
           Clique num tópico para ver os exercícios
         </div>
       </div>
-
-      {/* Tooltip flutuante */}
-      {tooltip && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "calc(100% - 4px)",
-            left: tooltip.x + 24,
-            transform: "translateX(-50%)",
-            background: "#1e293b",
-            color: "#f8fafc",
-            padding: "5px 11px",
-            borderRadius: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
-            zIndex: 20,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-          }}
-        >
-          {tooltip.text}
-          {/* Seta */}
-          <div
-            style={{
-              position: "absolute",
-              top: "100%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 0,
-              height: 0,
-              borderLeft: "5px solid transparent",
-              borderRight: "5px solid transparent",
-              borderTop: "5px solid #1e293b",
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }

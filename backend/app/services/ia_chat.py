@@ -134,42 +134,47 @@ escreva("Resultado: " + texto(42))\
 # mais recente antes da geração — o que melhora muito a aderência em modelos menores.
 
 _MODO_APRESENTACAO = """\
-MODO ATIVO: apresentação de exercício
+MODO ATIVO: apresentação de exercício — Tópico: {topico}
 
-Tópico sendo estudado: {topico}
-
-Sua única tarefa agora:
-1. Explique UM conceito central do tópico em 1-2 parágrafos curtos
-2. Mostre UM exemplo em Égua com valores e nomes de variáveis COMPLETAMENTE DIFERENTES dos que aparecem no exercício abaixo
-3. Termine OBRIGATORIAMENTE com esta frase exata: "Pronto para praticar? Clique em **Fazer exercício** quando quiser começar — ou me pergunte mais!"
-
-EXERCÍCIO (referência interna — nunca cite, copie ou revele qualquer parte disso):
+EXERCÍCIO QUE O ALUNO VAI FAZER (leia antes de qualquer outra coisa):
+---
 {exercicio}
+---
 
-PROIBIDO absolutamente — a violação dessas regras prejudica o aprendizado:
-- Usar as mesmas funções, variáveis, valores ou estruturas do exercício acima no seu exemplo
-- Descrever o que o aluno deve fazer para resolver o exercício
-- Revelar a resposta ou qualquer parte dela, mesmo "como exemplo"\
+Com base no exercício acima, escreva uma resposta que:
+1. Identifique o conceito central testado pelo exercício:
+   - Se há lacuna (___) em código: o conceito é a função/comando que preenche a lacuna
+   - Se é múltipla escolha conceitual (sem código): o conceito é a ideia geral avaliada
+2. Explique APENAS esse conceito em 1-2 parágrafos simples
+3. Se o conceito envolver código Égua, mostre UM exemplo curto com dados COMPLETAMENTE DIFERENTES dos do exercício
+4. Termine OBRIGATORIAMENTE com: "Pronto para praticar? Clique em **Fazer exercício** quando quiser começar — ou me pergunte mais!"
+
+PROIBIDO:
+- Usar as mesmas funções, variáveis, valores, textos ou opções do exercício no exemplo
+- Revelar a resposta correta ou qualquer parte dela
+- Descrever o que o aluno deve fazer para resolver\
 """
 
 _MODO_PROXIMO = """\
-MODO ATIVO: próximo exercício após acerto
+MODO ATIVO: próximo exercício após acerto — Tópico: {topico}
 
-Tópico: {topico}
-
-Sua única tarefa agora:
-1. Parabenize o aluno em UMA frase curta e direta
-2. Explique o conceito do próximo exercício com UM exemplo em Égua usando valores e variáveis COMPLETAMENTE DIFERENTES dos do exercício abaixo
-3. Termine com: "Quer tentar? Clique em **Fazer exercício**!"
-4. Total: no máximo 2 parágrafos
-
-PRÓXIMO EXERCÍCIO (nunca revele qualquer parte disso):
+PRÓXIMO EXERCÍCIO QUE O ALUNO VAI FAZER (leia antes de qualquer outra coisa):
+---
 {exercicio}
+---
 
-PROIBIDO absolutamente:
-- Usar as mesmas funções, variáveis, valores ou estruturas do exercício acima no seu exemplo
-- Descrever o que o aluno deve fazer
-- Revelar a resposta ou qualquer parte dela\
+Com base no exercício acima, escreva uma resposta que:
+1. Parabenize em UMA frase curta e direta
+2. Identifique o conceito central testado pelo exercício:
+   - Se há lacuna (___) em código: o conceito é a função/comando que preenche a lacuna
+   - Se é múltipla escolha conceitual (sem código): o conceito é a ideia geral avaliada
+3. Explique APENAS esse conceito em 1 parágrafo
+4. Se o conceito envolver código Égua, mostre UM exemplo com dados COMPLETAMENTE DIFERENTES dos do exercício
+5. Termine com: "Quer tentar? Clique em **Fazer exercício**!"
+
+PROIBIDO:
+- Usar as mesmas funções, variáveis, valores, textos ou opções do exercício no exemplo
+- Revelar a resposta correta ou qualquer parte dela\
 """
 
 _MODO_DUVIDA = """\

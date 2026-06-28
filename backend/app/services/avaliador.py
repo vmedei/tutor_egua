@@ -53,7 +53,7 @@ async def _executar_egua(codigo: str, entrada: str = "") -> tuple[str, str]:
             proc.communicate(),
             timeout=TIMEOUT_EXECUCAO,
         )
-        return stdout.decode("utf-8").strip(), stderr.decode("utf-8").strip()
+        return stdout.decode("utf-8").strip(), stderr.decode("utf-8").strip()    
     except FileNotFoundError:
         return "", "Node.js não encontrado no PATH. Instale em nodejs.org"
     except asyncio.TimeoutError:
@@ -84,13 +84,13 @@ async def avaliar_resposta(exercicio: Exercicio, resposta: str) -> ResultadoAval
                 (i for i, op in enumerate(opcoes) if op.lower() == resposta_limpa), -1
             )
         correto = indice_aluno == indice_correto
-        detalhe = None if correto else f"Resposta correta: {opcoes[indice_correto]}"
+        detalhe = None if correto else "Resposta incorreta. Tente novamente!"
         return ResultadoAvaliacao(correto=correto, detalhe=detalhe)
 
     if tipo == "completar_codigo":
         esperado = gabarito.get("resposta", "").strip().lower()
         correto = resposta.strip().lower() == esperado
-        detalhe = None if correto else f"Esperado: '{gabarito.get('resposta')}'"
+        detalhe = None if correto else "Resposta incorreta. Tente novamente!"
         return ResultadoAvaliacao(correto=correto, detalhe=detalhe)
 
     if tipo == "implementacao_livre":
@@ -119,7 +119,7 @@ async def avaliar_resposta(exercicio: Exercicio, resposta: str) -> ResultadoAval
             if saida != saida_esperada:
                 return ResultadoAvaliacao(
                     correto=False,
-                    detalhe=f"Entrada: '{entrada}' → esperado '{saida_esperada}', obtido '{saida}'",
+                    detalhe=f"Entrada: '{entrada}' → saída obtida: '{saida}'",
                     saidas_obtidas=saidas_obtidas,
                 )
 

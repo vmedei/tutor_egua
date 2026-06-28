@@ -1,11 +1,7 @@
 """
-Gera feedback explicativo usando a API Groq (llama-3.3-70b-versatile).
+Gera feedback explicativo usando a API Groq.
 Só é chamado quando o aluno erra.
 
-Limites do plano gratuito (Groq):
-  - 30 requisições/minuto
-  - 14.400 requisições/dia
-  - 500.000 tokens/minuto
 """
 import logging
 import uuid
@@ -53,7 +49,7 @@ Responda em português, de forma encorajadora e didática. Máximo de 3 parágra
 
     try:
         response = await _client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
         )

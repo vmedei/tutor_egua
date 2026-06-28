@@ -372,7 +372,7 @@ from app.config import settings
 _client = AsyncGroq(api_key=settings.groq_api_key)
 
 response = await _client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
+    model="llama-3.1-8b-instant",
     messages=messages,   # lista de {"role": "system"|"user"|"assistant", "content": "..."}
     max_tokens=800,
 )

@@ -2,7 +2,7 @@
 
 Sistema Tutor Inteligente (ITS) para aprendizado de programação com a [linguagem Égua](http://programar.egua.dev/).
 
-**Stack:** FastAPI · PostgreSQL · React · Vite · TypeScript · Groq llama-3.3-70b-versatile (gratuito)
+**Stack:** FastAPI · PostgreSQL · React · Vite · TypeScript · Groq API (modelo configurável via `.env`)
 
 ---
 
@@ -28,11 +28,11 @@ tutor_egua/
 │   │   │   ├── exercicio.py   # GET  /exercicio/{id}
 │   │   │   └── chat.py        # POST /chat/
 │   │   ├── services/
-│   │   │   ├── avaliador.py   # Executa código Égua e avalia saída
+│   │   │   ├── avaliador.py   # Executa código Égua e avalia saída (não revela resposta correta)
 │   │   │   ├── modelo_aluno.py# BKT simplificado — atualiza proficiência
 │   │   │   ├── seletor.py     # Seleciona próximo exercício (DAG + BKT)
-│   │   │   ├── ia_feedback.py # Gera feedback textual quando o aluno erra
-│   │   │   └── ia_chat.py     # Chatbot conversacional (3 modos de operação)
+│   │   │   ├── ia_feedback.py # Gera feedback textual com dica progressiva quando o aluno erra
+│   │   │   └── ia_chat.py     # Chatbot conversacional (BASE_PROMPT + prompt de modo injetado)
 │   │   └── seed/              # Dados iniciais (topicos.yaml + exercicios.yaml)
 │   ├── alembic/               # Migrations do banco
 │   ├── egua_runner.js         # Runner de código Égua (Node.js + @designliquido/delegua)
@@ -110,6 +110,11 @@ SECRET_KEY=sua-chave-secreta-aqui
 
 # Obtenha gratuitamente em: https://console.groq.com/keys
 GROQ_API_KEY=gsk_...
+
+# Modelos Groq para cada serviço (opcional — valores abaixo são os padrões)
+# Modelos disponíveis: llama-3.3-70b-versatile, llama-3.1-8b-instant, llama3-8b-8192
+GROQ_MODEL_CHAT=llama-3.3-70b-versatile
+GROQ_MODEL_FEEDBACK=llama-3.3-70b-versatile
 
 DEBUG=true
 ```
@@ -220,11 +225,30 @@ Documentação interativa (Swagger): [http://localhost:8000/docs](http://localho
 
 A página `/tutor` implementa um loop de aprendizagem completo:
 
-1. **Grafo de pré-requisitos** (painel superior direito): mostra o DAG de tópicos com desbloqueio progressivo. Clicar em um nó disponível seleciona o tópico.
-2. **Chat IA** (painel esquerdo): ao selecionar um tópico, pré-busca o próximo exercício e preenche o campo de texto. O aluno clica em Enviar e recebe uma explicação focada nos conceitos do exercício.
+1. **Grafo de pré-requisitos** (painel direito): mostra o DAG de tópicos com desbloqueio progressivo. Clicar em um nó disponível seleciona o tópico.
+2. **Chat IA** (painel esquerdo): ao selecionar um tópico, pré-busca o próximo exercício e preenche o campo de texto. O aluno clica em Enviar e recebe uma explicação derivada do conceito específico do exercício (não uma explicação genérica do tópico).
 3. **Botão "Fazer exercício"**: aparece após a explicação da IA. Exibe o card do exercício no histórico do chat.
-4. **Resolução do exercício**: múltipla escolha, completar código ou implementação livre com execução real.
-5. **Progressão automática**: ao acertar, após 1 segundo, a IA apresenta o próximo exercício e o ciclo recomeça.
+4. **Resolução do exercício**: múltipla escolha, completar código ou implementação livre com execução real do código Égua.
+5. **Feedback ao errar**: dica progressiva gerada pela IA ("leve" → "moderada" → "solução") sem revelar a resposta correta.
+6. **Progressão automática**: ao acertar, após 1 segundo, a IA apresenta o próximo exercício com nova explicação e o ciclo recomeça.
+
+### Arquitetura do chatbot (dois níveis de prompt)
+
+O assistente usa dois `system messages` em cada chamada à API:
+
+```
+[system 1] BASE_PROMPT       — identidade, regras permanentes, referência completa da linguagem Égua
+[system 2] PROMPT DE MODO    — instrução específica do modo atual (mais recente = mais peso no modelo)
+[user]     mensagem do aluno
+```
+
+Modos detectados automaticamente pelo backend:
+
+| Modo | Ativação | Comportamento |
+|---|---|---|
+| `apresentacao` | Sem histórico + exercício disponível | Explica o conceito testado pelo exercício, sem revelar a resposta |
+| `proximo` | Mensagem interna `[próximo-exercício]` | Parabeniza + explica conceito do próximo exercício |
+| `duvida` | Histórico existente ou sem exercício | Responde à dúvida com dicas progressivas |
 
 ---
 
@@ -288,15 +312,17 @@ alembic upgrade head
 ### Implementado
 
 - [x] Execução real de código Égua com casos de teste
-- [x] Modelo de proficiência BKT por tópico
-- [x] Grafo de pré-requisitos (DAG) com desbloqueio progressivo
-- [x] Feedback IA quando o aluno erra (Groq llama-3.3-70b)
+- [x] Modelo de proficiência BKT por tópico com decaimento temporal (Ebbinghaus)
+- [x] Grafo de pré-requisitos (DAG) com desbloqueio progressivo e soft-lock visual
+- [x] Feedback IA com dica progressiva quando o aluno erra ("leve" → "moderada" → "solução")
+- [x] Avaliador sem revelar a resposta correta no retorno da API
 - [x] Dashboard com progresso global e gráfico por tópico
 - [x] Histórico de sessões do aluno
-- [x] Chatbot conversacional integrado à página Tutor
-- [x] Fluxo tutor: explicação → exercício → progressão automática
+- [x] Chatbot conversacional com arquitetura de dois prompts (BASE + modo)
+- [x] Fluxo tutor: explicação derivada do exercício → exercício → progressão automática
 - [x] Grafo SVG com nós clicáveis e setas de dependência
 - [x] Layout responsivo de 3 painéis na página Tutor
+- [x] Modelo Groq configurável via variável de ambiente (`GROQ_MODEL_CHAT`, `GROQ_MODEL_FEEDBACK`)
 
 ### Próximas melhorias
 
@@ -304,6 +330,7 @@ alembic upgrade head
 - [ ] Testes automatizados com `pytest` + `httpx.AsyncClient`
 - [ ] Suporte a múltiplos `escreva()` em sequência (saída multi-linha)
 - [ ] Persistência do histórico do chat entre sessões
+- [ ] Calibração dos parâmetros BKT com dados reais de uso
 
 ---
 

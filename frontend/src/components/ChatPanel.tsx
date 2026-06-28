@@ -547,7 +547,7 @@ export function ChatPanel({ topicoSelecionado }: Props) {
         mensagem: texto,
         historico: historicoParaIA.slice(0, -1),
         contexto_topico: topicoSelecionado?.nome ?? "",
-        contexto_exercicio: contextoExercicio,
+        contexto_exercicio: contextoExercicio || proximoExercicio?.enunciado || "",
       });
       setHistorico((prev) => [...prev, { id: genId(), papel: "assistente", texto: data.resposta }]);
     } catch (err: unknown) {

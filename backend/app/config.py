@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     # Groq
     groq_api_key: str = ""
+    groq_model_chat: str = "llama-3.3-70b-versatile"
+    groq_model_feedback: str = "llama-3.3-70b-versatile"
 
     # App
     debug: bool = False

@@ -49,7 +49,7 @@ Responda em português, de forma encorajadora e didática. Máximo de 3 parágra
 
     try:
         response = await _client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=settings.groq_model_feedback,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=500,
         )

@@ -1,11 +1,11 @@
 """
-Gera feedback explicativo usando a API do Google Gemini (gratuita).
+Gera feedback explicativo usando a API Groq (llama-3.3-70b-versatile).
 Só é chamado quando o aluno erra.
 
-Limites do plano gratuito (Gemini 2.0 Flash):
-  - 15 requisições/minuto
-  - 1.000.000 tokens/dia
-  - 1.500 requisições/dia
+Limites do plano gratuito (Groq):
+  - 30 requisições/minuto
+  - 14.400 requisições/dia
+  - 500.000 tokens/minuto
 """
 import logging
 import uuid

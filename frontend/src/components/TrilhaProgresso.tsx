@@ -22,6 +22,7 @@ interface Props {
   exercicioAtivo?: string | null;
   onTopicoClick?: (codigo: string) => void;
   onExercicioClick?: (id: string) => void;
+  onTopicoSoftLock?: (codigo: string, nome: string) => void;
 }
 
 const LIMIAR = 70;
@@ -39,7 +40,7 @@ function exColor(correto: boolean, tentado: boolean) {
   return "#cbd5e1";
 }
 
-export function TrilhaProgresso({ porTopico, versao, topicoAtivo, exercicioAtivo, onTopicoClick, onExercicioClick }: Props) {
+export function TrilhaProgresso({ porTopico, versao, topicoAtivo, exercicioAtivo, onTopicoClick, onExercicioClick, onTopicoSoftLock }: Props) {
   const [dados, setDados] = useState<TopicoExercicios[]>([]);
   const [expandido, setExpandido] = useState<string | null>(null);
   const alunoId = localStorage.getItem("aluno_id") ?? "";
@@ -68,7 +69,12 @@ export function TrilhaProgresso({ porTopico, versao, topicoAtivo, exercicioAtivo
 
   function handleTopicClick(codigo: string) {
     setExpandido((prev) => (prev === codigo ? null : codigo));
-    if (isDisponivel(codigo)) onTopicoClick?.(codigo);
+    if (isDisponivel(codigo)) {
+      onTopicoClick?.(codigo);
+    } else {
+      const tp = porTopico.find((t) => t.topico_codigo === codigo);
+      onTopicoSoftLock?.(codigo, tp?.topico_nome ?? codigo);
+    }
   }
 
   // ── Constrói lista plana de itens ─────────────────────────────────────────

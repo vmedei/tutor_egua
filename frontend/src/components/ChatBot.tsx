@@ -11,12 +11,13 @@ interface Props {
   topicoNome: string;
   exercicioEnunciado: string;
   onMensagemEnviada?: () => void;
+  avisoSoftLock?: { nome: string; ts: number } | null;
 }
 
 const BOAS_VINDAS = (topico: string) =>
   `Olá! Sou o assistente do TutorÉgua. Estou aqui para ajudar com o exercício de **${topico}**.\n\nPode me perguntar sobre sintaxe da linguagem Égua, pedir uma explicação do conceito ou pedir uma dica sobre o exercício. Como posso ajudar?`;
 
-export function ChatBot({ topicoNome, exercicioEnunciado, onMensagemEnviada }: Props) {
+export function ChatBot({ topicoNome, exercicioEnunciado, onMensagemEnviada, avisoSoftLock }: Props) {
   const [aberto, setAberto] = useState(false);
   const [historico, setHistorico] = useState<Mensagem[]>([]);
   const [input, setInput] = useState("");
@@ -39,6 +40,23 @@ export function ChatBot({ topicoNome, exercicioEnunciado, onMensagemEnviada }: P
     const id = setTimeout(() => setTempoEspera((t) => t - 1), 1000);
     return () => clearTimeout(id);
   }, [tempoEspera]);
+
+  useEffect(() => {
+    if (!avisoSoftLock) return;
+    const aviso: Mensagem = {
+      papel: "assistente",
+      texto: `O tópico **${avisoSoftLock.nome}** ainda não está disponível. Você precisa dominar os pré-requisitos com pelo menos 70% de proficiência antes de avançar. Quer que eu te ajude com o exercício atual ou explique o conceito necessário?`,
+      tipo: "aviso",
+    };
+    setAberto(true);
+    setHistorico((prev) => {
+      const base =
+        prev.length === 0
+          ? [{ papel: "assistente" as const, texto: BOAS_VINDAS(topicoNome) }]
+          : prev;
+      return [...base, aviso];
+    });
+  }, [avisoSoftLock, topicoNome]);
 
   const bloqueado = carregando || tempoEspera > 0;
 

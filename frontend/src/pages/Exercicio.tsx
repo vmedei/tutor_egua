@@ -93,6 +93,7 @@ export function Exercicio() {
   const [versaoTrilha, setVersaoTrilha] = useState(0);
   const [topicoAtivo, setTopicoAtivo] = useState<string | null>(null);
   const [exercicioAtivo, setExercicioAtivo] = useState<string | null>(null);
+  const [softLockAviso, setSoftLockAviso] = useState<{ nome: string; ts: number } | null>(null);
   const { recarregar, porTopico } = useProgresso();
 
   const alunoId = localStorage.getItem("aluno_id") ?? "";
@@ -108,6 +109,7 @@ export function Exercicio() {
     setDicasUsadas(0);
     setErro(null);
     setConcluido(false);
+    setSoftLockAviso(null);
   }, []);
 
   const carregarProximo = useCallback(() => {
@@ -252,6 +254,7 @@ export function Exercicio() {
           exercicioAtivo={exercicioAtivo}
           onTopicoClick={carregarPorTopico}
           onExercicioClick={carregarPorId}
+          onTopicoSoftLock={(_, nome) => setSoftLockAviso({ nome, ts: Date.now() })}
         />
       </div>
 
@@ -455,6 +458,7 @@ export function Exercicio() {
           topicoNome={exercicio.topico_nome ?? exercicio.tipo.replace(/_/g, " ")}
           exercicioEnunciado={exercicio.enunciado}
           onMensagemEnviada={() => setDicasUsadas((total) => total + 1)}
+          avisoSoftLock={softLockAviso}
         />
 
         {submissao && (

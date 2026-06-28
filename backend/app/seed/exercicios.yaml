@@ -3,121 +3,115 @@ exercicios:
   # ── INTRODUÇÃO ──────────────────────────────────────────────────────────────
 
   - topico: introducao
-    enunciado: |
-      Considere o trecho abaixo:
+    enunciado: "Um programa de computador é formado por:"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "Imagens e botões organizados em uma tela"
+        - "Uma sequência de instruções que o computador executa, uma por uma"
+        - "Arquivos de configuração de hardware"
+        - "Textos enviados pela internet"
+      correta: 1
 
-          // escreva("Olá")
+  - topico: introducao
+    enunciado: "Qual instrução exibe texto na tela em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "leia()"
+        - "imprima()"
+        - "escreva()"
+        - "mostrar()"
+      correta: 2
+
+  - topico: introducao
+    enunciado: |
+      Complete o código para que "Boa tarde!" seja exibido na tela:
+
+          ___ ("Boa tarde!")
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "escreva"
+
+  - topico: introducao
+    enunciado: |
+      Escreva um programa em Égua que exiba exatamente:
+      Ola, mundo!
+    tipo: implementacao_livre
+    nivel_bloom: 1
+    gabarito:
+      descricao: "Use escreva() passando o texto entre aspas"
+    casos_de_teste:
+      - entrada: ""
+        saida_esperada: "Ola, mundo!"
+
+  - topico: introducao
+    enunciado: "O que o símbolo // representa em Égua?"
+    tipo: multipla_escolha
+    nivel_bloom: 1
+    gabarito:
+      opcoes:
+        - "Divisão inteira entre dois números"
+        - "Início de um bloco de código"
+        - "Um comentário — a linha não é executada pelo interpretador"
+        - "Repetição da instrução seguinte"
+      correta: 2
+
+  - topico: introducao
+    enunciado: |
+      Complete a linha para que ela seja tratada como comentário e ignorada pelo interpretador:
+
+          ___ Este trecho não será executado
+    tipo: completar_codigo
+    nivel_bloom: 1
+    gabarito:
+      resposta: "//"
+
+  - topico: introducao
+    enunciado: |
+      Considere o código abaixo:
+
+          // escreva("Ola")
           escreva("Mundo")
 
       O que será exibido ao executar esse programa?
     tipo: multipla_escolha
-    nivel_bloom: 1
+    nivel_bloom: 2
     gabarito:
       opcoes:
-        - "Olá\nMundo"
+        - "Ola"
         - "Mundo"
-        - "Olá"
-        - "Nada — nenhuma linha é executada"
+        - "Ola\nMundo"
+        - "Nada — o comentário impede tudo de ser executado"
       correta: 1
 
   - topico: introducao
-    enunciado: "Um aluno digitou 42 quando o programa chamou leia(). O valor armazenado na variável é:"
+    enunciado: "O que a instrução leia() faz quando o programa é executado?"
     tipo: multipla_escolha
     nivel_bloom: 1
     gabarito:
       opcoes:
-        - "O número inteiro 42"
-        - "O texto \"42\""
-        - "verdadeiro, pois 42 é diferente de zero"
-        - "Nada — leia() não retorna valor"
+        - "Exibe um texto formatado na tela"
+        - "Aguarda o usuário digitar algo e captura essa entrada"
+        - "Encerra o programa imediatamente"
+        - "Lê um arquivo salvo no disco"
       correta: 1
 
   - topico: introducao
     enunciado: |
-      Complete o código para que o conteúdo da variável cidade apareça na tela:
-
-          var cidade = "Natal"
-          escreva(___)
-    tipo: completar_codigo
-    nivel_bloom: 1
-    gabarito:
-      resposta: "cidade"
-
-  - topico: introducao
-    enunciado: |
-      O programa abaixo deveria ler um nome e exibi-lo, mas está incompleto. Complete:
-
-          var nome = ___()
-          escreva(nome)
-    tipo: completar_codigo
-    nivel_bloom: 1
-    gabarito:
-      resposta: "leia"
-
-  - topico: introducao
-    enunciado: |
-      Escreva um programa em Égua que exiba exatamente:
-      Egua
+      Escreva um programa em Égua que exiba, em linhas separadas:
+      Inicio
+      Fim
     tipo: implementacao_livre
     nivel_bloom: 1
     gabarito:
-      descricao: "Use escreva() para exibir a palavra Egua"
+      descricao: "Use duas chamadas de escreva(), uma para cada texto"
     casos_de_teste:
       - entrada: ""
-        saida_esperada: "Egua"
-
-  - topico: introducao
-    enunciado: |
-      Um aluno escreveu:
-
-          var linguagem = "Égua"
-          escreva("linguagem")
-
-      Ele esperava ver Égua na tela, mas o programa exibiu linguagem. Por quê?
-    tipo: multipla_escolha
-    nivel_bloom: 1
-    gabarito:
-      opcoes:
-        - "escreva() não aceita variáveis, apenas textos"
-        - "O argumento está entre aspas, tornando-o um texto literal, não a variável"
-        - "Falta declarar linguagem antes de usar escreva()"
-        - "Deveria usar leia() em vez de escreva()"
-      correta: 1
-
-  - topico: introducao
-    enunciado: |
-      Escreva um programa em Égua que exiba exatamente:
-      Aprendendo Égua
-    tipo: implementacao_livre
-    nivel_bloom: 1
-    gabarito:
-      descricao: "Use escreva() com o texto exato, incluindo o acento"
-    casos_de_teste:
-      - entrada: ""
-        saida_esperada: "Aprendendo Égua"
-
-  - topico: introducao
-    enunciado: |
-      Complete o código para exibir a frase completa "Bem-vindo ao Égua":
-
-          var parte = "Égua"
-          escreva("Bem-vindo ao " + ___)
-    tipo: completar_codigo
-    nivel_bloom: 1
-    gabarito:
-      resposta: "parte"
-
-  - topico: introducao
-    enunciado: |
-      Escreva um programa em Égua que exiba exatamente:
-      Primeiros passos
-    tipo: implementacao_livre
-    nivel_bloom: 1
-    gabarito:
-      descricao: "Use escreva() para exibir a frase"
-    casos_de_teste:
-      - entrada: ""
-        saida_esperada: "Primeiros passos"
+        saida_esperada: "Inicio\nFim"
 
   # ── VARIÁVEIS ───────────────────────────────────────────────────────────────
 

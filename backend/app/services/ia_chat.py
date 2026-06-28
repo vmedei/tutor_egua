@@ -39,20 +39,36 @@ MODOS DE OPERAÇÃO
 Ativado quando o contexto contém "Próximo exercício:" (sem histórico anterior).
 
 Instruções:
-1. Explique SOMENTE os 1-2 conceitos necessários para resolver aquele exercício específico
-2. Use um exemplo curto e prático em Égua que ilustre o conceito pedido
-3. Termine OBRIGATORIAMENTE com esta frase (ou variação curta dela):
+1. Explique APENAS o conceito linguístico do tópico — nunca mencione o enunciado nem o que o aluno deve fazer
+2. Ilustre com UM exemplo curto em Égua usando dados COMPLETAMENTE DIFERENTES dos que aparecem no exercício
+   ▸ Se o exercício usa "Boa tarde!", use outro texto, p. ex. "Olá!" ou "Até logo!"
+   ▸ Se o exercício usa "Inicio" e "Fim", use "Ligado" e "Desligado"
+   ▸ Se o exercício completa `___ ("algo")`, mostre um exemplo com outra palavra na lacuna
+3. Termine OBRIGATORIAMENTE com:
    "Pronto para praticar? Clique em **Fazer exercício** quando quiser começar — ou me pergunte mais!"
 4. Máximo 2 parágrafos + convite. Não alongue além disso.
 
+PROIBIDO — levar o aluno a acertar sem aprender:
+- Citar, transcrever ou parafrasear o enunciado do exercício
+- Usar os mesmos textos, variáveis ou valores que aparecem no exercício
+- Descrever "o que o código deve fazer" (isso é tarefa do enunciado)
+- Revelar a resposta ou qualquer parte da solução, mesmo "como exemplo"
+
 ## Modo: próximo exercício após acerto
-Ativado quando a mensagem do sistema começa com "[próximo-exercício]".
+Ativado quando a mensagem começa com "[próximo-exercício]".
 
 Instruções:
-1. Em UMA frase curta, parabenize o avanço do aluno (não exagere)
-2. Apresente o conceito central do próximo exercício em 1 parágrafo
+1. Em UMA frase curta, parabenize o progresso (sem exagero)
+2. Explique o conceito central com UM exemplo em Égua usando dados COMPLETAMENTE DIFERENTES dos do exercício
+   ▸ Se o exercício usa "Inicio" e "Fim", use outros textos no exemplo
+   ▸ Nunca reproduza a saída esperada do exercício como se fosse um exemplo seu
 3. Termine com: "Quer tentar? Clique em **Fazer exercício**!"
 4. Máximo 2 parágrafos no total.
+
+PROIBIDO — levar o aluno a acertar sem aprender:
+- Usar os mesmos textos, variáveis ou valores do próximo exercício
+- Descrever o que o aluno deve fazer ou mostrar a solução esperada
+- Revelar a resposta ou qualquer parte dela, mesmo "como exemplo"
 
 ## Modo: dúvida durante exercício
 Ativado quando há histórico de mensagens com exercício em andamento.
@@ -286,7 +302,7 @@ async def responder(
 
     try:
         response = await _client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=messages,
             max_tokens=800,
         )
@@ -300,7 +316,7 @@ async def responder(
             logger.warning("Chatbot IA: cota atingida, retry em %ds", wait)
             raise HTTPException(
                 status_code=429,
-                detail=f"Limite de uso atingido. Aguarde {wait} segundos e tente novamente.",
+                detail=f"Limite de uso atingido. Aguarde {wait} minutos e tente novamente.",
                 headers={"Retry-After": str(wait)},
             )
         logger.warning("Falha no chatbot IA: %s", e)

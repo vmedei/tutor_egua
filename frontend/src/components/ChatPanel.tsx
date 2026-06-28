@@ -449,12 +449,12 @@ export function ChatPanel({ topicoSelecionado }: Props) {
   }, [historico, carregando, buscandoExercicio]);
 
   // Busca o próximo exercício do tópico e armazena (sem adicionar ao histórico)
+  // Não seta contextoExercicio aqui — só quando o exercício é exibido ao aluno
   const buscarProximoExercicio = useCallback(async (topicoCodigo: string): Promise<ExercicioData | null> => {
     setBuscandoExercicio(true);
     try {
       const { data } = await api.get<ExercicioData>(`/tutor/exercicio-por-topico/${alunoId}/${topicoCodigo}`);
       setProximoExercicio(data);
-      setContextoExercicio(data.enunciado);
       return data;
     } catch {
       setProximoExercicio(null);
@@ -464,9 +464,10 @@ export function ChatPanel({ topicoSelecionado }: Props) {
     }
   }, [alunoId]);
 
-  // Mostra o exercício pré-buscado no histórico
+  // Mostra o exercício pré-buscado no histórico e só então libera o contexto para o chat
   const mostrarExercicio = () => {
     if (!proximoExercicio) return;
+    setContextoExercicio(proximoExercicio.enunciado);
     setHistorico((prev) => [...prev, {
       id: genId(),
       papel: "sistema" as const,
@@ -486,9 +487,9 @@ export function ChatPanel({ topicoSelecionado }: Props) {
         `/tutor/exercicio-por-topico/${alunoId}/${topicoSelecionado.codigo}`
       );
       setProximoExercicio(proxExercicio);
-      setContextoExercicio(proxExercicio.enunciado);
+      // contextoExercicio só é liberado em mostrarExercicio(), quando o card aparece na tela
 
-      // IA apresenta o próximo exercício automaticamente
+      // IA explica o conceito do próximo exercício (sem revelar a resposta)
       setCarregando(true);
       const { data: iaData } = await api.post("/chat/", {
         mensagem: "[próximo-exercício]",
